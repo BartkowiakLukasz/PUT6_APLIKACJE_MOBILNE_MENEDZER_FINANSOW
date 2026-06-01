@@ -60,6 +60,22 @@ private fun TransactionListContent(
             }
         }
 
+        uiState.errorMessage != null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.transaction_list_error),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+
         uiState.transactions.isEmpty() -> {
             Box(
                 modifier = modifier
@@ -94,10 +110,16 @@ private fun TransactionListContent(
 
 @Composable
 private fun TransactionListItem(transaction: TransactionItemUi) {
+    val categoryLabel = transaction.categoryName
+        ?: stringResource(R.string.no_category)
+    val paymentLabel = stringResource(
+        if (transaction.isCash) R.string.payment_cash else R.string.payment_card
+    )
+
     ListItem(
         headlineContent = { Text(transaction.title) },
         supportingContent = {
-            Text("${transaction.categoryName} · ${transaction.dateFormatted}")
+            Text("$categoryLabel · $paymentLabel · ${transaction.dateFormatted}")
         },
         trailingContent = {
             Text(

@@ -16,6 +16,10 @@ interface TransactionDao {
     suspend fun insertTransaction(transaction: TransactionEntity)
 
     @Transaction
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    fun getAllWithDetails(): Flow<List<TransactionWithDetails>>
+
+    @Transaction
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionWithDetails>>
 

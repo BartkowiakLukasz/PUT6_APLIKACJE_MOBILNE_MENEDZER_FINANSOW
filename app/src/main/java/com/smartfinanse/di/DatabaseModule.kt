@@ -3,6 +3,7 @@ package com.smartfinanse.di
 import android.content.Context
 import androidx.room.Room
 import com.smartfinanse.data.local.SmartFinanseDatabase
+import com.smartfinanse.data.local.dao.CategoryDao
 import com.smartfinanse.data.local.dao.TransactionDao
 import dagger.Module
 import dagger.Provides
@@ -23,6 +24,10 @@ object DatabaseModule {
             SmartFinanseDatabase::class.java,
             SmartFinanseDatabase.DATABASE_NAME
         ).build()
+
+    @Provides
+    fun provideCategoryDao(database: SmartFinanseDatabase): CategoryDao =
+        database.categoryDao
 
     @Provides
     fun provideTransactionDao(database: SmartFinanseDatabase): TransactionDao =

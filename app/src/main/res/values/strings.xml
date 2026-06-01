@@ -3,4 +3,8 @@
     <string name="app_name">Smart Finanse</string>
     <string name="transaction_list_title">Transakcje</string>
     <string name="transaction_list_empty">Brak transakcji. Dodaj pierwszy wydatek lub przychód.</string>
+    <string name="transaction_list_error">Nie udało się załadować transakcji.</string>
+    <string name="no_category">Bez kategorii</string>
+    <string name="payment_cash">Gotówka</string>
+    <string name="payment_card">Karta</string>
 </resources>

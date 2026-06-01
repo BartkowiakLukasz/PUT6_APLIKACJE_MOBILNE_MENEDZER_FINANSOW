@@ -2,6 +2,7 @@ package com.smartfinanse.data.repository
 
 import com.smartfinanse.data.local.dao.TransactionDao
 import com.smartfinanse.data.local.mapper.toDomain
+import com.smartfinanse.data.local.mapper.toEntity
 import com.smartfinanse.domain.model.TransactionWithCategory
 import com.smartfinanse.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,4 +17,8 @@ class TransactionRepositoryImpl @Inject constructor(
         transactionDao.getAllWithDetails().map { items ->
             items.map { it.toDomain() }
         }
+
+    override suspend fun addTransaction(transaction: com.smartfinanse.domain.model.Transaction) {
+        transactionDao.insertTransaction(transaction.toEntity())
+    }
 }

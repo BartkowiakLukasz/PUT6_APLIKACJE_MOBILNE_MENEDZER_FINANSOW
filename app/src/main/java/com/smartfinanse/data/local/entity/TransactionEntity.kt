@@ -24,6 +24,7 @@ data class TransactionEntity(
     val description: String,
     val date: Long,
     val isCash: Boolean,
+    val isRecurring: Boolean = false,
     val location: String?,
     val receiptImageUri: String?
 )

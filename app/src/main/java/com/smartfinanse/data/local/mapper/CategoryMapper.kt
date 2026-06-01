@@ -7,12 +7,14 @@ fun CategoryEntity.toDomain(): Category = Category(
     id = id,
     name = name,
     iconName = iconName,
-    isExpense = isExpense
+    isExpense = isExpense,
+    colorHex = colorHex
 )
 
 fun Category.toEntity(): CategoryEntity = CategoryEntity(
     id = id,
     name = name,
     iconName = iconName,
-    isExpense = isExpense
+    isExpense = isExpense,
+    colorHex = colorHex
 )

@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class CategoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    val iconName: String, // np. "ic_food", "ic_car" do siatki ikon
-    val isExpense: Boolean // true dla wydatków, false dla przychodów
+    val iconName: String,
+    val isExpense: Boolean,
+    val colorHex: String = "#FF9800"
 )

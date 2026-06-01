@@ -18,4 +18,7 @@ interface CategoryDao {
 
     @Query("SELECT * FROM categories WHERE isExpense = :isExpense ORDER BY name ASC")
     fun getByExpenseType(isExpense: Boolean): Flow<List<CategoryEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCategory(category: CategoryEntity): Long
 }

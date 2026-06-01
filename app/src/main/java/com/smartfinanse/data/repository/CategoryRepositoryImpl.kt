@@ -3,6 +3,7 @@ package com.smartfinanse.data.repository
 import com.smartfinanse.data.local.DefaultCategories
 import com.smartfinanse.data.local.dao.CategoryDao
 import com.smartfinanse.data.local.mapper.toDomain
+import com.smartfinanse.data.local.mapper.toEntity
 import com.smartfinanse.domain.model.Category
 import com.smartfinanse.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.Flow
@@ -22,5 +23,9 @@ class CategoryRepositoryImpl @Inject constructor(
         if (categoryDao.count() == 0) {
             categoryDao.insertAll(DefaultCategories.all())
         }
+    }
+
+    override suspend fun addCategory(category: Category): Long {
+        return categoryDao.insertCategory(category.toEntity())
     }
 }

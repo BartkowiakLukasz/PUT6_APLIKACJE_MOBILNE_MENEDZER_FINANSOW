@@ -7,6 +7,7 @@ data class Transaction(
     val description: String,
     val date: Long,
     val isCash: Boolean,
+    val isRecurring: Boolean,
     val location: String?,
     val receiptImageUri: String?
 )

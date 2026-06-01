@@ -12,7 +12,7 @@ import com.smartfinanse.data.local.entity.TransactionEntity
         CategoryEntity::class,
         TransactionEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class SmartFinanseDatabase : RoomDatabase() {

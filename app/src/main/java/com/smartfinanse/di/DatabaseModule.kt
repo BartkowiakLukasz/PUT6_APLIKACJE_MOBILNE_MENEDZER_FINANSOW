@@ -23,7 +23,9 @@ object DatabaseModule {
             context,
             SmartFinanseDatabase::class.java,
             SmartFinanseDatabase.DATABASE_NAME
-        ).build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
 
     @Provides
     fun provideCategoryDao(database: SmartFinanseDatabase): CategoryDao =

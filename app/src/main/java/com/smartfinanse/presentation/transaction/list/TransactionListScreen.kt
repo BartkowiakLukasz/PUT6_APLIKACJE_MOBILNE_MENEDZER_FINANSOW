@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
@@ -27,6 +30,7 @@ import com.smartfinanse.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
+    onNavigateToAdd: () -> Unit,
     viewModel: TransactionListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -36,6 +40,14 @@ fun TransactionListScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.transaction_list_title)) }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigateToAdd) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Dodaj wydatek"
+                )
+            }
         }
     ) { innerPadding ->
         TransactionListContent(

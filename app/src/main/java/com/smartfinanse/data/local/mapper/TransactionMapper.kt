@@ -12,6 +12,19 @@ fun TransactionEntity.toDomain(): Transaction = Transaction(
     description = description,
     date = date,
     isCash = isCash,
+    isRecurring = isRecurring,
+    location = location,
+    receiptImageUri = receiptImageUri
+)
+
+fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
+    id = id,
+    categoryId = categoryId,
+    amount = amount,
+    description = description,
+    date = date,
+    isCash = isCash,
+    isRecurring = isRecurring,
     location = location,
     receiptImageUri = receiptImageUri
 )

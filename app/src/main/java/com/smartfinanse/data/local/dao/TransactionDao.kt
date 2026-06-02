@@ -31,6 +31,12 @@ interface TransactionDao {
         GROUP BY transactions.categoryId
     """)
     fun getCategoryTotalsBetweenDates(startDate: Long, endDate: Long): Flow<List<CategoryTotal>>
+
+    @Query("SELECT * FROM transactions")
+    suspend fun getAllTransactionsRaw(): List<TransactionEntity>
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAll()
 }
 
 data class CategoryTotal(

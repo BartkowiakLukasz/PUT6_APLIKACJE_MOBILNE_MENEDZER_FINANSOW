@@ -138,6 +138,7 @@ class DashboardViewModel @Inject constructor(
                     }.timeInMillis
                     txDate >= startOfYear
                 }
+                TimeFilter.ALL -> true
                 TimeFilter.CUSTOM -> {
                     val start = _uiState.value.customStartDate
                     val end = _uiState.value.customEndDate

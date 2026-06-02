@@ -5,6 +5,7 @@ enum class TimeFilter(val label: String) {
     WEEK("Tydzień"),
     MONTH("Miesiąc"),
     YEAR("Rok"),
+    ALL("Cały okres"),
     CUSTOM("Zakres")
 }
 

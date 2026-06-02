@@ -22,6 +22,7 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,14 +42,34 @@ import com.smartfinanse.presentation.scanner.ScannerScreen
 import com.smartfinanse.presentation.export.ExportScreen
 import com.smartfinanse.presentation.settings.SettingsScreen
 
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.smartfinanse.domain.repository.AppTheme
+import com.smartfinanse.domain.repository.UserPreferencesRepository
+import javax.inject.Inject
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var preferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SmartFinanseTheme {
+            val theme by preferencesRepository.theme.collectAsStateWithLifecycle()
+            val currency by preferencesRepository.currency.collectAsStateWithLifecycle()
+            
+            com.smartfinanse.presentation.common.MoneyFormatter.currentCurrencySymbol = currency.symbol
+            
+            val isDarkTheme = when(theme) {
+                AppTheme.SYSTEM -> isSystemInDarkTheme()
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+            }
+
+            SmartFinanseTheme(darkTheme = isDarkTheme) {
                 val navController = rememberNavController()
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()

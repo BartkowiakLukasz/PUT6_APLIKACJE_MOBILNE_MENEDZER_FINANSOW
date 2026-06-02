@@ -179,6 +179,7 @@ class TransactionListViewModel @Inject constructor(
                     }.timeInMillis
                     txDate >= startOfYear
                 }
+                TimeFilter.ALL -> true
                 TimeFilter.CUSTOM -> {
                     if (customStart != null && customEnd != null) {
                         val endOfDay = Calendar.getInstance().apply {

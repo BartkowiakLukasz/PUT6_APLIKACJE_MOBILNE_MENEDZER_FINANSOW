@@ -39,6 +39,7 @@ import java.util.Locale
 fun DashboardScreen(
     onNavigateToHistory: () -> Unit,
     onNavigateToAdd: () -> Unit,
+    onOpenDrawer: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -80,7 +81,7 @@ fun DashboardScreen(
             TopAppBar(
                 title = { Text("Smart Finanse") },
                 navigationIcon = {
-                    IconButton(onClick = { /* Hamburger menu - TODO w przyszłości */ }) {
+                    IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 },

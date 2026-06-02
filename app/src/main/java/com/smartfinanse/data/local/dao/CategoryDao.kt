@@ -21,4 +21,7 @@ interface CategoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategory(category: CategoryEntity): Long
+
+    @androidx.room.Update
+    suspend fun updateCategory(category: CategoryEntity)
 }

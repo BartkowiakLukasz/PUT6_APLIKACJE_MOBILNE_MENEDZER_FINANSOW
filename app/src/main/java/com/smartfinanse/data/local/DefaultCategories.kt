@@ -13,11 +13,5 @@ object DefaultCategories {
         CategoryEntity(name = "Rozrywka", iconName = "ic_entertainment", isExpense = true, colorHex = "#FFEB3B")
     )
 
-    fun incomeCategories(): List<CategoryEntity> = listOf(
-        CategoryEntity(name = "Pensja", iconName = "ic_salary", isExpense = false, colorHex = "#4CAF50"),
-        CategoryEntity(name = "Zwrot", iconName = "ic_refund", isExpense = false, colorHex = "#00BCD4"),
-        CategoryEntity(name = "Inne", iconName = "ic_other", isExpense = false, colorHex = "#FF9800")
-    )
-
-    fun all(): List<CategoryEntity> = expenseCategories() + incomeCategories()
+    fun all(): List<CategoryEntity> = expenseCategories()
 }

@@ -10,6 +10,7 @@ fun TransactionWithCategory.toUi(): TransactionItemUi {
         id = transaction.id,
         title = transaction.description,
         categoryName = category?.name,
+        categoryId = category?.id,
         amountFormatted = MoneyFormatter.format(transaction.amount, isExpense),
         dateFormatted = DateFormatter.format(transaction.date),
         isCash = transaction.isCash

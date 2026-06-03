@@ -149,7 +149,7 @@ class MainActivity : ComponentActivity() {
                                 onOpenDrawer = { scope.launch { drawerState.open() } }
                             )
                         }
-                        composable("add?amount={amount}&description={description}&date={date}&categoryId={categoryId}") {
+                        composable("add?amount={amount}&description={description}&date={date}&categoryId={categoryId}&isCash={isCash}") {
                             AddTransactionScreen(
                                 onNavigateBack = { navController.popBackStack() },
                                 onNavigateToScanner = { navController.navigate("scanner") }
@@ -163,12 +163,13 @@ class MainActivity : ComponentActivity() {
                         composable("scanner") {
                             ScannerScreen(
                                 onOpenDrawer = { scope.launch { drawerState.open() } },
-                                onNavigateToAddWithPreFill = { amount, description, date, categoryId ->
+                                onNavigateToAddWithPreFill = { amount, description, date, categoryId, isCash ->
                                     val amountStr = amount.toString()
                                     val descStr = Uri.encode(description)
                                     val dateStr = Uri.encode(date ?: "null")
                                     val catIdStr = categoryId?.toString() ?: "null"
-                                    navController.navigate("add?amount=$amountStr&description=$descStr&date=$dateStr&categoryId=$catIdStr") {
+                                    val isCashStr = isCash?.toString() ?: "null"
+                                    navController.navigate("add?amount=$amountStr&description=$descStr&date=$dateStr&categoryId=$catIdStr&isCash=$isCashStr") {
                                         popUpTo("scanner") { inclusive = true }
                                     }
                                 }

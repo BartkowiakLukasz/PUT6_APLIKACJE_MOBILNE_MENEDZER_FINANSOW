@@ -25,7 +25,7 @@ import java.io.File
 @Composable
 fun ScannerScreen(
     onOpenDrawer: () -> Unit,
-    onNavigateToAddWithPreFill: (amount: Double, description: String, date: String?, categoryId: Long?) -> Unit,
+    onNavigateToAddWithPreFill: (amount: Double, description: String, date: String?, categoryId: Long?, isCash: Boolean?) -> Unit,
     viewModel: ScannerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -67,7 +67,8 @@ fun ScannerScreen(
                     state.parsedReceipt.kwota,
                     state.parsedReceipt.sklep,
                     state.parsedReceipt.data,
-                    state.resolvedCategoryId
+                    state.resolvedCategoryId,
+                    state.parsedReceipt.czyGotowka
                 )
                 viewModel.clearState()
             }

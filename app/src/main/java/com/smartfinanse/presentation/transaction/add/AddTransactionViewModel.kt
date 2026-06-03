@@ -47,12 +47,16 @@ class AddTransactionViewModel @Inject constructor(
         val categoryIdStr = savedStateHandle.get<String>("categoryId")
         val categoryId = if (categoryIdStr != "null") categoryIdStr?.toLongOrNull() else null
 
+        val isCashStr = savedStateHandle.get<String>("isCash")
+        val isCashParam = if (isCashStr != "null") isCashStr?.toBooleanStrictOrNull() else null
+
         _uiState.update { 
             it.copy(
                 amount = amount,
                 description = description,
                 date = dateMillis,
-                selectedCategoryId = categoryId
+                selectedCategoryId = categoryId,
+                isCash = isCashParam ?: it.isCash
             )
         }
 

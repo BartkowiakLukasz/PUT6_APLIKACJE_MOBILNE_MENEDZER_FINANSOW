@@ -1,6 +1,8 @@
 package com.smartfinanse.presentation.scanner
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -40,6 +42,11 @@ class ScannerViewModel @Inject constructor(
 
     fun processReceipt(uri: Uri) {
         viewModelScope.launch {
+            if (!isInternetAvailable()) {
+                _uiState.value = ScannerUiState.Error("Brak dostępu do internetu. Połączenie z siecią jest wymagane do analizy paragonu przez AI.")
+                return@launch
+            }
+
             _uiState.value = ScannerUiState.Loading("Przygotowywanie obrazu...")
             try {
                 // Krok 1: Wczytanie obrazu
@@ -81,5 +88,17 @@ class ScannerViewModel @Inject constructor(
 
     fun clearState() {
         _uiState.value = ScannerUiState.Idle
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return when {
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+            else -> false
+        }
     }
 }

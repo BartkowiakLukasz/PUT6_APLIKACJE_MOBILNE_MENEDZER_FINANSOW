@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val localProperties = Properties()
@@ -89,6 +90,7 @@ dependencies {
 
     implementation(platform("com.google.firebase:firebase-bom:34.14.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-crashlytics")
 
     // ML Kit Text Recognition
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")

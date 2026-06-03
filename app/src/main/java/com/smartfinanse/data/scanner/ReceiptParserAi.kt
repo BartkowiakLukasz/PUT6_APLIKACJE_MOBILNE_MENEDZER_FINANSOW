@@ -44,8 +44,11 @@ class ReceiptParserAi {
             val response = model.generateContent(content { image(bitmap) })
             val jsonText = response.text ?: throw AiParsingException("Pusta odpowiedź od modelu")
             
+            com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Gemini response JSON: $jsonText")
+            
             gson.fromJson(jsonText, ParsedReceipt::class.java)
         } catch (e: Exception) {
+            com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Błąd analizy danych z paragonu", e)
             e.printStackTrace()
             throw AiParsingException("Nie udało się przeanalizować danych ze zdjęcia. Upewnij się, że paragon jest wyraźny.", e)
         }

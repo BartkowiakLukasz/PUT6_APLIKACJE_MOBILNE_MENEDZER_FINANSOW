@@ -69,8 +69,10 @@ class ScannerViewModel @Inject constructor(
                 _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id)
 
             } catch (e: AiParsingException) {
+                com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "AiParsingException: ${e.message}", e)
                 _uiState.value = ScannerUiState.Error(e.message ?: "Błąd analizy sztucznej inteligencji")
             } catch (e: Exception) {
+                com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "Unexpected exception: ${e.message}", e)
                 e.printStackTrace()
                 _uiState.value = ScannerUiState.Error("Wystąpił nieoczekiwany błąd: ${e.message}")
             }

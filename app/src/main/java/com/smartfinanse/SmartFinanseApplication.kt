@@ -19,6 +19,7 @@ class SmartFinanseApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        com.smartfinanse.utils.FileLogger.init(this)
         applicationScope.launch {
             seedCategoriesUseCase()
         }

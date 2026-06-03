@@ -5,8 +5,6 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartfinanse.data.scanner.AiParsingException
-import com.smartfinanse.data.scanner.OcrException
-import com.smartfinanse.data.scanner.OcrManager
 import com.smartfinanse.data.scanner.ParsedReceipt
 import com.smartfinanse.data.scanner.ReceiptParserAi
 import com.smartfinanse.domain.repository.CategoryRepository
@@ -35,7 +33,6 @@ class ScannerViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) : ViewModel() {
 
-    private val ocrManager = OcrManager(context)
     private val receiptParserAi = ReceiptParserAi()
 
     private val _uiState = MutableStateFlow<ScannerUiState>(ScannerUiState.Idle)
@@ -43,12 +40,18 @@ class ScannerViewModel @Inject constructor(
 
     fun processReceipt(uri: Uri) {
         viewModelScope.launch {
-            _uiState.value = ScannerUiState.Loading("Odczytywanie tekstu...")
+            _uiState.value = ScannerUiState.Loading("Przygotowywanie obrazu...")
             try {
-                // Krok 1: OCR lokalnie
-                val rawText = ocrManager.extractTextFromImage(uri)
-                if (rawText.isBlank()) {
-                    throw OcrException("Nie rozpoznano żadnego tekstu. Spróbuj zrobić wyraźniejsze zdjęcie.")
+                // Krok 1: Wczytanie obrazu
+                val bitmap = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    val source = android.graphics.ImageDecoder.createSource(context.contentResolver, uri)
+                    android.graphics.ImageDecoder.decodeBitmap(source) { decoder, _, _ ->
+                        decoder.allocator = android.graphics.ImageDecoder.ALLOCATOR_SOFTWARE
+                        decoder.isMutableRequired = true
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    android.provider.MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
                 }
 
                 _uiState.value = ScannerUiState.Loading("Sztuczna inteligencja analizuje dane...")
@@ -58,15 +61,13 @@ class ScannerViewModel @Inject constructor(
                 val categoryNames = categories.map { it.name }
 
                 // Krok 3: Gemini API
-                val parsedReceipt = receiptParserAi.parseReceiptText(rawText, categoryNames)
+                val parsedReceipt = receiptParserAi.parseReceiptImage(bitmap, categoryNames)
 
                 // Krok 4: Dopasowanie kategorii do ID
                 val resolvedCategory = categories.find { it.name.equals(parsedReceipt.kategoria, ignoreCase = true) }
 
                 _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id)
 
-            } catch (e: OcrException) {
-                _uiState.value = ScannerUiState.Error(e.message ?: "Błąd odczytu tekstu")
             } catch (e: AiParsingException) {
                 _uiState.value = ScannerUiState.Error(e.message ?: "Błąd analizy sztucznej inteligencji")
             } catch (e: Exception) {

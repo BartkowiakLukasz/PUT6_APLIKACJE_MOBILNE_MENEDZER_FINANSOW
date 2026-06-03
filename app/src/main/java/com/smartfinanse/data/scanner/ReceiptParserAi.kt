@@ -6,6 +6,8 @@ import com.google.ai.client.generativeai.type.generationConfig
 import com.google.gson.Gson
 import com.smartfinanse.BuildConfig
 
+import android.graphics.Bitmap
+
 data class ParsedReceipt(
     val sklep: String,
     val kwota: Double,
@@ -17,11 +19,11 @@ class ReceiptParserAi {
 
     private val gson = Gson()
 
-    suspend fun parseReceiptText(rawText: String, availableCategories: List<String>): ParsedReceipt {
+    suspend fun parseReceiptImage(bitmap: Bitmap, availableCategories: List<String>): ParsedReceipt {
         val categoriesStr = availableCategories.joinToString(", ")
         
         val systemInstruction = """
-            Jesteś ekspertem finansowym. Otrzymasz surowy tekst zeskandowany z paragonu. Twoim zadaniem jest wyciągnięcie z niego 4 informacji:
+            Jesteś ekspertem finansowym. Otrzymasz zdjęcie paragonu. Twoim zadaniem jest wyciągnięcie z niego 4 informacji:
             'sklep' - nazwa sprzedawcy (np. Biedronka, Orlen).
             'kwota' - ostateczna kwota do zapłaty (tylko liczba, kropka jako separator dziesiętny). Zignoruj podatek VAT, resztę, czy podsumowania przed zniżkami. Szukaj 'Suma', 'Do zapłaty', 'Zapłacono'.
             'data' - data zakupu w formacie YYYY-MM-DD. Jeśli nie potrafisz jej znaleźć, zwróć null.
@@ -39,13 +41,13 @@ class ReceiptParserAi {
         )
 
         return try {
-            val response = model.generateContent(rawText)
+            val response = model.generateContent(content { image(bitmap) })
             val jsonText = response.text ?: throw AiParsingException("Pusta odpowiedź od modelu")
             
             gson.fromJson(jsonText, ParsedReceipt::class.java)
         } catch (e: Exception) {
             e.printStackTrace()
-            throw AiParsingException("Nie udało się przeanalizować danych z paragonu. Upewnij się, że zdjęcie jest wyraźne.", e)
+            throw AiParsingException("Nie udało się przeanalizować danych ze zdjęcia. Upewnij się, że paragon jest wyraźny.", e)
         }
     }
 }

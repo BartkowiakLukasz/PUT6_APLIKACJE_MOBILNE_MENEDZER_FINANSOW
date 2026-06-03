@@ -151,7 +151,8 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("add?amount={amount}&description={description}&date={date}&categoryId={categoryId}") {
                             AddTransactionScreen(
-                                onNavigateBack = { navController.popBackStack() }
+                                onNavigateBack = { navController.popBackStack() },
+                                onNavigateToScanner = { navController.navigate("scanner") }
                             )
                         }
                         composable("categories") {

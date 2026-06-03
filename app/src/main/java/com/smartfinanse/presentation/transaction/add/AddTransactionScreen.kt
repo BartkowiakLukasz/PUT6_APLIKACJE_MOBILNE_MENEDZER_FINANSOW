@@ -71,6 +71,7 @@ import java.util.Locale
 @Composable
 fun AddTransactionScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToScanner: () -> Unit,
     viewModel: AddTransactionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -103,7 +104,8 @@ fun AddTransactionScreen(
             onIsRecurringChange = viewModel::onIsRecurringChange,
             onCategorySelected = viewModel::onCategorySelected,
             onSaveClick = viewModel::saveTransaction,
-            onShowAddCategoryClick = { viewModel.showAddCategoryDialog(true) }
+            onShowAddCategoryClick = { viewModel.showAddCategoryDialog(true) },
+            onNavigateToScanner = onNavigateToScanner
         )
 
         if (uiState.showAddCategoryDialog) {
@@ -127,7 +129,8 @@ private fun AddTransactionContent(
     onIsRecurringChange: (Boolean) -> Unit,
     onCategorySelected: (Long) -> Unit,
     onSaveClick: () -> Unit,
-    onShowAddCategoryClick: () -> Unit
+    onShowAddCategoryClick: () -> Unit,
+    onNavigateToScanner: () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -142,9 +145,9 @@ private fun AddTransactionContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // OCR Button (Placeholder)
+        // OCR Button
         Button(
-            onClick = { /* TODO: Implement OCR/LLM logic */ },
+            onClick = onNavigateToScanner,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp)
         ) {

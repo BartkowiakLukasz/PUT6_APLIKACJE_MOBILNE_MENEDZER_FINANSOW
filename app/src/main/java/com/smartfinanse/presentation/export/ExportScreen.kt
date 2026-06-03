@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun ExportScreen(
     onOpenDrawer: () -> Unit,
+    onNavigateToDashboard: () -> Unit,
     viewModel: ExportViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -60,11 +61,84 @@ fun ExportScreen(
             } ?: ""
             
             if (extension.equals("json", ignoreCase = true) || type?.contains("json") == true) {
-                viewModel.restoreFromJson(uri)
+                viewModel.prepareRestoreFromJson(uri)
             } else {
                 viewModel.mergeFromCsv(uri)
             }
         }
+    }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.exportSuccess, uiState.importSuccess, uiState.error) {
+        uiState.exportSuccess?.let { success ->
+            val result = snackbarHostState.showSnackbar(
+                message = "${success.message} (W formacie ${success.format})",
+                actionLabel = "Udostępnij",
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                val mimeType = if (success.format == "CSV") "text/csv" else "application/json"
+                shareFile(success.uri, mimeType)
+            }
+            viewModel.clearMessages()
+        }
+
+        uiState.importSuccess?.let { success ->
+            val msg = buildString {
+                append(success.message)
+                append(" (${success.importedCount})")
+                if (success.duplicatesSkipped > 0) {
+                    append("\nPominięto ${success.duplicatesSkipped} duplikatów.")
+                }
+            }
+            val result = snackbarHostState.showSnackbar(
+                message = msg,
+                actionLabel = "Sprawdź",
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onNavigateToDashboard()
+            }
+            viewModel.clearMessages()
+        }
+
+        uiState.error?.let { error ->
+            val actionLabel = when(error.action) {
+                ErrorAction.RETRY -> "Spróbuj ponownie"
+                ErrorAction.HELP -> "Pomoc"
+                null -> null
+            }
+            val result = snackbarHostState.showSnackbar(
+                message = error.reason,
+                actionLabel = actionLabel,
+                duration = SnackbarDuration.Long
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                if (error.action == ErrorAction.RETRY) {
+                    // Retry logic if applicable, for now just close
+                }
+            }
+            viewModel.clearMessages()
+        }
+    }
+
+    if (uiState.showOverwriteDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.cancelRestoreFromJson() },
+            title = { Text("Ostrzeżenie przed utratą danych") },
+            text = { Text("Czy na pewno chcesz kontynuować? Obecne dane zostaną nadpisane i mogą zostać bezpowrotnie utracone.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.confirmRestoreFromJson() }) {
+                    Text("Kontynuuj", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.cancelRestoreFromJson() }) {
+                    Text("Anuluj")
+                }
+            }
+        )
     }
 
     var showDateRangePicker by remember { mutableStateOf(false) }
@@ -111,7 +185,8 @@ fun ExportScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -132,33 +207,41 @@ fun ExportScreen(
             }
 
             Box(modifier = Modifier.weight(1f)) {
-                if (uiState.isExporting || uiState.isImporting) {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                } else {
-                    if (selectedTabIndex == 0) {
-                        ExportContent(
-                            uiState = uiState,
-                            onTimeFilterSelected = { filter ->
-                                if (filter == com.smartfinanse.presentation.dashboard.TimeFilter.CUSTOM) {
-                                    showDateRangePicker = true
-                                } else {
-                                    viewModel.setTimeFilter(filter)
-                                }
-                            },
-                            onToggleCategory = viewModel::toggleCategorySelection,
-                            onToggleCash = viewModel::toggleCashOnly,
-                            onToggleCard = viewModel::toggleCardOnly,
-                            onExportCsv = {
-                                viewModel.generateCsv { uri -> shareFile(uri, "text/csv") }
-                            },
-                            onExportJson = {
-                                viewModel.generateJson { uri -> shareFile(uri, "application/json") }
+                if (selectedTabIndex == 0) {
+                    ExportContent(
+                        uiState = uiState,
+                        onTimeFilterSelected = { filter ->
+                            if (filter == com.smartfinanse.presentation.dashboard.TimeFilter.CUSTOM) {
+                                showDateRangePicker = true
+                            } else {
+                                viewModel.setTimeFilter(filter)
                             }
-                        )
-                    } else {
-                        ImportContent(
-                            onImportClick = { importLauncher.launch("*/*") }
-                        )
+                        },
+                        onToggleCategory = viewModel::toggleCategorySelection,
+                        onToggleCash = viewModel::toggleCashOnly,
+                        onToggleCard = viewModel::toggleCardOnly,
+                        onExportCsv = {
+                            viewModel.generateCsv()
+                        },
+                        onExportJson = {
+                            viewModel.generateJson()
+                        }
+                    )
+                } else {
+                    ImportContent(
+                        uiState = uiState,
+                        onImportClick = { importLauncher.launch("*/*") }
+                    )
+                }
+
+                if (uiState.isExporting || uiState.isImporting) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .align(Alignment.Center),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
                 }
             }
@@ -196,7 +279,8 @@ fun ExportContent(
 
             OutlinedButton(
                 onClick = { onTimeFilterSelected(com.smartfinanse.presentation.dashboard.TimeFilter.CUSTOM) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isExporting && !uiState.isImporting
             ) {
                 Icon(Icons.Default.DateRange, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -220,6 +304,7 @@ fun ExportContent(
                         selected = uiState.selectedCategories.contains(cat.id),
                         onClick = { onToggleCategory(cat.id) },
                         label = { Text(cat.name) },
+                        enabled = !uiState.isExporting && !uiState.isImporting,
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.secondaryContainer
                         )
@@ -238,14 +323,16 @@ fun ExportContent(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = uiState.exportCashOnly,
-                    onCheckedChange = onToggleCash
+                    onCheckedChange = onToggleCash,
+                    enabled = !uiState.isExporting && !uiState.isImporting
                 )
                 Text("Tylko Gotówka")
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = uiState.exportCardOnly,
-                    onCheckedChange = onToggleCard
+                    onCheckedChange = onToggleCard,
+                    enabled = !uiState.isExporting && !uiState.isImporting
                 )
                 Text("Tylko Karta")
             }
@@ -255,14 +342,16 @@ fun ExportContent(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = onExportCsv,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isExporting && !uiState.isImporting
             ) {
                 Text("Wygeneruj raport CSV")
             }
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = onExportJson,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isExporting && !uiState.isImporting
             ) {
                 Text("Pełna Kopia Zapasowa (JSON)")
             }
@@ -272,6 +361,7 @@ fun ExportContent(
 
 @Composable
 fun ImportContent(
+    uiState: ExportUiState,
     onImportClick: () -> Unit
 ) {
     Column(
@@ -288,7 +378,8 @@ fun ImportContent(
         
         Button(
             onClick = onImportClick,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isExporting && !uiState.isImporting
         ) {
             Text("Wybierz Plik (CSV / JSON)")
         }

@@ -165,7 +165,14 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("export") {
                             ExportScreen(
-                                onOpenDrawer = { scope.launch { drawerState.open() } }
+                                onOpenDrawer = { scope.launch { drawerState.open() } },
+                                onNavigateToDashboard = { 
+                                    navController.navigate("dashboard") {
+                                        popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                }
                             )
                         }
                         composable("settings") {

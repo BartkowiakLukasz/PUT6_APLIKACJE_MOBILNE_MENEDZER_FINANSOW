@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -110,70 +112,95 @@ class ExportViewModel @Inject constructor(
         _uiState.update { it.copy(exportCardOnly = value, exportCashOnly = if (value) false else it.exportCashOnly) }
     }
 
-    fun generateCsv(onExportReady: (Uri) -> Unit) {
+    fun generateCsv() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isExporting = true) }
-            val state = _uiState.value
+            _uiState.update { it.copy(isExporting = true, error = null, exportSuccess = null) }
+            try {
+                val state = _uiState.value
+                val transactionsFlow = if (state.startDate != null && state.endDate != null) {
+                    transactionDao.getTransactionsBetweenDates(state.startDate, state.endDate)
+                } else {
+                    transactionDao.getAllWithDetails()
+                }
 
-            val transactionsFlow = if (state.startDate != null && state.endDate != null) {
-                transactionDao.getTransactionsBetweenDates(state.startDate, state.endDate)
-            } else {
-                transactionDao.getAllWithDetails()
-            }
-
-            // Await a single emission to process
-            transactionsFlow.collect { allTrans ->
-                var filtered = allTrans
-
-                if (state.selectedCategories.isNotEmpty()) {
-                    filtered = filtered.filter { t ->
-                        t.category?.id?.let { id -> state.selectedCategories.contains(id) } == true
+                transactionsFlow.collect { allTrans ->
+                    var filtered = allTrans
+                    if (state.selectedCategories.isNotEmpty()) {
+                        filtered = filtered.filter { t ->
+                            t.category?.id?.let { id -> state.selectedCategories.contains(id) } == true
+                        }
                     }
-                }
+                    if (state.exportCashOnly) {
+                        filtered = filtered.filter { it.transaction.isCash }
+                    } else if (state.exportCardOnly) {
+                        filtered = filtered.filter { !it.transaction.isCash }
+                    }
 
-                if (state.exportCashOnly) {
-                    filtered = filtered.filter { it.transaction.isCash }
-                } else if (state.exportCardOnly) {
-                    filtered = filtered.filter { !it.transaction.isCash }
+                    val uri = withContext(Dispatchers.IO) {
+                        exportManager.exportToCsv(filtered)
+                    }
+
+                    _uiState.update { 
+                        it.copy(
+                            isExporting = false, 
+                            exportSuccess = ExportSuccess(uri, "CSV", "Dane zostały wyeksportowane")
+                        ) 
+                    }
+                    throw kotlinx.coroutines.CancellationException("Stop collecting")
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                // To jest oczekiwane po pomyślnym zebraniu pierwszego elementu
+            } catch (e: Exception) {
+                handleError(e)
+                _uiState.update { it.copy(isExporting = false) }
+            }
+        }
+    }
+
+    fun generateJson() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isExporting = true, error = null, exportSuccess = null) }
+            try {
+                val categories = withContext(Dispatchers.IO) { categoryDao.getAllCategoriesRaw() }
+                val transactions = withContext(Dispatchers.IO) { transactionDao.getAllTransactionsRaw() }
 
                 val uri = withContext(Dispatchers.IO) {
-                    exportManager.exportToCsv(filtered)
+                    exportManager.exportToJson(categories, transactions)
                 }
 
+                _uiState.update { 
+                    it.copy(
+                        isExporting = false, 
+                        exportSuccess = ExportSuccess(uri, "JSON", "Dane zostały wyeksportowane")
+                    ) 
+                }
+            } catch (e: Exception) {
+                handleError(e)
                 _uiState.update { it.copy(isExporting = false) }
-                if (uri != null) {
-                    onExportReady(uri)
-                }
-                throw kotlinx.coroutines.CancellationException("Stop collecting")
             }
         }
     }
 
-    fun generateJson(onExportReady: (Uri) -> Unit) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isExporting = true) }
-            val categories = withContext(Dispatchers.IO) { categoryDao.getAllCategoriesRaw() }
-            val transactions = withContext(Dispatchers.IO) { transactionDao.getAllTransactionsRaw() }
-
-            val uri = withContext(Dispatchers.IO) {
-                exportManager.exportToJson(categories, transactions)
-            }
-
-            _uiState.update { it.copy(isExporting = false) }
-            if (uri != null) {
-                onExportReady(uri)
-            }
-        }
+    fun prepareRestoreFromJson(uri: Uri) {
+        _uiState.update { it.copy(showOverwriteDialog = true, pendingImportUri = uri) }
     }
 
-    fun restoreFromJson(uri: Uri) {
+    fun confirmRestoreFromJson() {
+        val uri = _uiState.value.pendingImportUri ?: return
+        _uiState.update { it.copy(showOverwriteDialog = false, pendingImportUri = null) }
+        restoreFromJson(uri)
+    }
+
+    fun cancelRestoreFromJson() {
+        _uiState.update { it.copy(showOverwriteDialog = false, pendingImportUri = null) }
+    }
+
+    private fun restoreFromJson(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isImporting = true) }
-            
-            val backupData = importManager.parseJsonBackup(uri)
-            if (backupData != null) {
-                // Wipe & Restore
+            _uiState.update { it.copy(isImporting = true, error = null, importSuccess = null) }
+            try {
+                val backupData = importManager.parseJsonBackup(uri)
+                
                 transactionDao.deleteAll()
                 categoryDao.deleteAll()
 
@@ -181,57 +208,101 @@ class ExportViewModel @Inject constructor(
                 backupData.transactions.forEach { t ->
                     transactionDao.insertTransaction(t)
                 }
+                
+                _uiState.update { 
+                    it.copy(
+                        isImporting = false,
+                        importSuccess = ImportSuccess(
+                            importedCount = backupData.transactions.size,
+                            duplicatesSkipped = 0,
+                            message = "Pomyślnie zaimportowano bazę"
+                        )
+                    ) 
+                }
+            } catch (e: Exception) {
+                handleError(e)
+                _uiState.update { it.copy(isImporting = false) }
             }
-            
-            _uiState.update { it.copy(isImporting = false) }
         }
     }
 
     fun mergeFromCsv(uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
-            _uiState.update { it.copy(isImporting = true) }
-
-            val csvData = importManager.parseCsv(uri)
-            if (csvData != null) {
+            _uiState.update { it.copy(isImporting = true, error = null, importSuccess = null) }
+            try {
+                val csvData = importManager.parseCsv(uri)
                 val existingRaw = transactionDao.getAllTransactionsRaw()
                 val format = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                 val categories = categoryDao.getAllCategoriesRaw()
                 
-                csvData.forEach { row ->
-                    try {
-                        val amount = (row.amountStr.replace(",", ".").toDouble() * 100).toLong()
-                        val date = format.parse(row.dateStr)?.time ?: 0L
-                        
-                        // Znajdź kategorię po nazwie, jeśli nie to zostaw null
-                        val cat = categories.find { it.name.equals(row.categoryName, ignoreCase = true) }
-                        
-                        // Sprawdź duplikaty (amount, description, date, isCash)
-                        val isDuplicate = existingRaw.any { ext ->
-                            ext.amount == amount && 
-                            ext.description == row.description &&
-                            ext.date == date &&
-                            ext.isCash == row.isCash
-                        }
+                var imported = 0
+                var duplicates = 0
 
-                        if (!isDuplicate) {
-                            val newT = TransactionEntity(
-                                categoryId = cat?.id,
-                                amount = amount,
-                                description = row.description,
-                                date = date,
-                                isCash = row.isCash,
-                                location = null,
-                                receiptImageUri = null
-                            )
-                            transactionDao.insertTransaction(newT)
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                csvData.forEach { row ->
+                    val amount = (row.amountStr.replace(",", ".").toDouble() * 100).toLong()
+                    val date = format.parse(row.dateStr)?.time ?: 0L
+                    
+                    val cat = categories.find { it.name.equals(row.categoryName, ignoreCase = true) }
+                    
+                    val isDuplicate = existingRaw.any { ext ->
+                        ext.amount == amount && 
+                        ext.description == row.description &&
+                        ext.date == date &&
+                        ext.isCash == row.isCash
+                    }
+
+                    if (!isDuplicate) {
+                        val newT = TransactionEntity(
+                            categoryId = cat?.id,
+                            amount = amount,
+                            description = row.description,
+                            date = date,
+                            isCash = row.isCash,
+                            location = null,
+                            receiptImageUri = null
+                        )
+                        transactionDao.insertTransaction(newT)
+                        imported++
+                    } else {
+                        duplicates++
                     }
                 }
+
+                _uiState.update { 
+                    it.copy(
+                        isImporting = false,
+                        importSuccess = ImportSuccess(
+                            importedCount = imported,
+                            duplicatesSkipped = duplicates,
+                            message = "Pomyślnie zaimportowano transakcje"
+                        )
+                    ) 
+                }
+            } catch (e: Exception) {
+                handleError(e)
+                _uiState.update { it.copy(isImporting = false) }
             }
-            _uiState.update { it.copy(isImporting = false) }
         }
+    }
+
+    private fun handleError(e: Exception) {
+        e.printStackTrace()
+        val reason = when (e) {
+            is SecurityException -> "Brak uprawnień do pliku."
+            is IOException -> "Błąd odczytu/zapisu pliku. Brak miejsca lub uprawnień."
+            is IllegalArgumentException -> e.message ?: "Nieprawidłowy format pliku."
+            is com.google.gson.JsonSyntaxException -> "Plik nie jest poprawnym plikiem JSON z danymi aplikacji."
+            else -> "Wystąpił nieoczekiwany błąd podczas operacji."
+        }
+        val action = when (e) {
+            is IllegalArgumentException, is com.google.gson.JsonSyntaxException -> ErrorAction.HELP
+            else -> ErrorAction.RETRY
+        }
+        _uiState.update { it.copy(error = OperationError(reason, action)) }
+    }
+
+    fun clearMessages() {
+        _uiState.update { it.copy(exportSuccess = null, importSuccess = null, error = null) }
     }
     
 }

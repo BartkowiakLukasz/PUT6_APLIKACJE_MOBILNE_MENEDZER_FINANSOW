@@ -12,52 +12,44 @@ class ImportManager(private val context: Context) {
 
     private val gson = Gson()
 
-    fun parseJsonBackup(uri: Uri): BackupData? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            val jsonString = reader.readText()
-            reader.close()
-            
-            gson.fromJson(jsonString, BackupData::class.java)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+    fun parseJsonBackup(uri: Uri): BackupData {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: throw IllegalArgumentException("Nie można otworzyć pliku")
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val jsonString = reader.readText()
+        reader.close()
+        
+        return gson.fromJson(jsonString, BackupData::class.java)
     }
 
-    fun parseCsv(uri: Uri): List<CsvTransaction>? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val reader = BufferedReader(InputStreamReader(inputStream))
+    fun parseCsv(uri: Uri): List<CsvTransaction> {
+        val inputStream = context.contentResolver.openInputStream(uri) ?: throw IllegalArgumentException("Nie można otworzyć pliku")
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        
+        val lines = reader.readLines()
+        reader.close()
+        
+        if (lines.isEmpty()) throw IllegalArgumentException("Plik CSV jest pusty")
+        
+        val result = mutableListOf<CsvTransaction>()
+        // Pomiń nagłówek (pierwsza linia)
+        for (i in 1 until lines.size) {
+            val line = lines[i]
+            if (line.isBlank()) continue
             
-            val lines = reader.readLines()
-            reader.close()
-            
-            if (lines.isEmpty()) return null
-            
-            val result = mutableListOf<CsvTransaction>()
-            // Pomiń nagłówek (pierwsza linia)
-            for (i in 1 until lines.size) {
-                val line = lines[i]
-                if (line.isBlank()) continue
+            val parts = line.split(",")
+            if (parts.size >= 6) {
+                val dateStr = parts[1]
+                val catName = parts[2]
+                val amountStr = parts[3]
+                val desc = parts[4]
+                val isCash = parts[5].toBoolean()
                 
-                val parts = line.split(",")
-                if (parts.size >= 6) {
-                    val dateStr = parts[1]
-                    val catName = parts[2]
-                    val amountStr = parts[3]
-                    val desc = parts[4]
-                    val isCash = parts[5].toBoolean()
-                    
-                    result.add(CsvTransaction(dateStr, catName, amountStr, desc, isCash))
-                }
+                result.add(CsvTransaction(dateStr, catName, amountStr, desc, isCash))
+            } else {
+                throw IllegalArgumentException("Nieprawidłowy format pliku CSV w linii ${i + 1}")
             }
-            result
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
         }
+        return result
     }
 }
 

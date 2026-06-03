@@ -18,54 +18,44 @@ class ExportManager(private val context: Context) {
     private val gson = Gson()
     private val authority = "${context.packageName}.fileprovider"
 
-    fun exportToJson(categories: List<CategoryEntity>, transactions: List<TransactionEntity>): Uri? {
+    fun exportToJson(categories: List<CategoryEntity>, transactions: List<TransactionEntity>): Uri {
         val backupData = BackupData(categories, transactions)
         val jsonString = gson.toJson(backupData)
 
-        return try {
-            val file = File(context.cacheDir, "smart_finanse_backup_${System.currentTimeMillis()}.json")
-            val writer = FileWriter(file)
-            writer.write(jsonString)
-            writer.close()
-            FileProvider.getUriForFile(context, authority, file)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        val file = File(context.cacheDir, "smart_finanse_backup_${System.currentTimeMillis()}.json")
+        val writer = FileWriter(file)
+        writer.write(jsonString)
+        writer.close()
+        return FileProvider.getUriForFile(context, authority, file)
     }
 
-    fun exportToCsv(transactions: List<TransactionWithDetails>): Uri? {
-        return try {
-            val file = File(context.cacheDir, "smart_finanse_export_${System.currentTimeMillis()}.csv")
-            val writer = FileWriter(file)
-            
-            // W nagłówkach CSV używamy separatora przecinkowego
-            writer.append("ID,Data,Kategoria,Kwota,Opis,Czy_Gotowka\n")
-            
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+    fun exportToCsv(transactions: List<TransactionWithDetails>): Uri {
+        val file = File(context.cacheDir, "smart_finanse_export_${System.currentTimeMillis()}.csv")
+        val writer = FileWriter(file)
+        
+        // W nagłówkach CSV używamy separatora przecinkowego
+        writer.append("ID,Data,Kategoria,Kwota,Opis,Czy_Gotowka\n")
+        
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
 
-            for (t in transactions) {
-                val dateStr = dateFormat.format(Date(t.transaction.date))
-                val catName = t.category?.name ?: "Brak"
-                // Formatujemy kwotę (np. 12050 na 120.50)
-                val amountStr = String.format(Locale.US, "%.2f", t.transaction.amount / 100.0)
-                
-                // Ubezpieczamy się przed przecinkami w opisie
-                val safeDescription = t.transaction.description.replace(",", " ")
-                
-                writer.append("${t.transaction.id},")
-                writer.append("$dateStr,")
-                writer.append("$catName,")
-                writer.append("$amountStr,")
-                writer.append("$safeDescription,")
-                writer.append("${t.transaction.isCash}\n")
-            }
+        for (t in transactions) {
+            val dateStr = dateFormat.format(Date(t.transaction.date))
+            val catName = t.category?.name ?: "Brak"
+            // Formatujemy kwotę (np. 12050 na 120.50)
+            val amountStr = String.format(Locale.US, "%.2f", t.transaction.amount / 100.0)
             
-            writer.close()
-            FileProvider.getUriForFile(context, authority, file)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
+            // Ubezpieczamy się przed przecinkami w opisie
+            val safeDescription = t.transaction.description.replace(",", " ")
+            
+            writer.append("${t.transaction.id},")
+            writer.append("$dateStr,")
+            writer.append("$catName,")
+            writer.append("$amountStr,")
+            writer.append("$safeDescription,")
+            writer.append("${t.transaction.isCash}\n")
         }
+        
+        writer.close()
+        return FileProvider.getUriForFile(context, authority, file)
     }
 }

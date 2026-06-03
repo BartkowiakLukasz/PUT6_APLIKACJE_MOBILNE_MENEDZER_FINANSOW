@@ -17,6 +17,13 @@ object FileLogger {
 
     fun logError(tag: String, message: String, e: Throwable? = null) {
         try {
+            // Log to logcat for local USB debugging
+            if (e != null) {
+                android.util.Log.e(tag, message, e)
+            } else {
+                android.util.Log.d(tag, message)
+            }
+
             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
             val stacktrace = e?.stackTraceToString() ?: ""
             val logMessage = "[$timestamp] $tag: $message\n$stacktrace\n----------------------------------------\n"

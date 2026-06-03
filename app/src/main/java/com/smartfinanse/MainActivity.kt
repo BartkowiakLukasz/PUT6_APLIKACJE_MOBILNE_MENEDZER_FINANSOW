@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.smartfinanse.presentation.dashboard.DashboardScreen
 import com.smartfinanse.presentation.transaction.add.AddTransactionScreen
+import android.net.Uri
 
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
@@ -148,7 +149,7 @@ class MainActivity : ComponentActivity() {
                                 onOpenDrawer = { scope.launch { drawerState.open() } }
                             )
                         }
-                        composable("add") {
+                        composable("add?amount={amount}&description={description}&date={date}&categoryId={categoryId}") {
                             AddTransactionScreen(
                                 onNavigateBack = { navController.popBackStack() }
                             )
@@ -160,7 +161,16 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("scanner") {
                             ScannerScreen(
-                                onOpenDrawer = { scope.launch { drawerState.open() } }
+                                onOpenDrawer = { scope.launch { drawerState.open() } },
+                                onNavigateToAddWithPreFill = { amount, description, date, categoryId ->
+                                    val amountStr = amount.toString()
+                                    val descStr = Uri.encode(description)
+                                    val dateStr = Uri.encode(date ?: "null")
+                                    val catIdStr = categoryId?.toString() ?: "null"
+                                    navController.navigate("add?amount=$amountStr&description=$descStr&date=$dateStr&categoryId=$catIdStr") {
+                                        popUpTo("scanner") { inclusive = true }
+                                    }
+                                }
                             )
                         }
                         composable("export") {

@@ -1,10 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="Theme.SmartFinanse" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/app_background_light</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
+
+    <style name="Theme.SmartFinanse.Splash.Light" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background_light</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background_light</item>
+        <item name="android:windowBackground">@color/splash_background_light</item>
+        <item name="postSplashScreenTheme">@style/Theme.SmartFinanse</item>
+    </style>
+
+    <style name="Theme.SmartFinanse.Splash.Dark" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background_dark</item>
+        <item name="android:windowBackground">@color/splash_background_dark</item>
+        <item name="postSplashScreenTheme">@style/Theme.SmartFinanse</item>
+    </style>
+
 </resources>

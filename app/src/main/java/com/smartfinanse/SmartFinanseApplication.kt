@@ -1,7 +1,9 @@
 package com.smartfinanse
 
 import android.app.Application
+import android.content.Context
 import com.smartfinanse.domain.usecase.SeedCategoriesUseCase
+import com.smartfinanse.presentation.theme.ThemePreferenceApplier
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -16,6 +18,11 @@ class SmartFinanseApplication : Application() {
     lateinit var seedCategoriesUseCase: SeedCategoriesUseCase
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun attachBaseContext(base: Context) {
+        ThemePreferenceApplier.apply(base)
+        super.attachBaseContext(base)
+    }
 
     override fun onCreate() {
         super.onCreate()

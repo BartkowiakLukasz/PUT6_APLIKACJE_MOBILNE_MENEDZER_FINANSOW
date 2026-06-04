@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.smartfinanse.presentation.theme.applyLaunchSplashTheme
 import com.smartfinanse.presentation.theme.SmartFinanseTheme
 import com.smartfinanse.presentation.transaction.list.TransactionListScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,6 +58,8 @@ class MainActivity : ComponentActivity() {
     lateinit var preferencesRepository: UserPreferencesRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyLaunchSplashTheme()
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {

@@ -6,7 +6,10 @@ import com.smartfinanse.data.export.ExportManager
 import com.smartfinanse.domain.repository.AppTheme
 import com.smartfinanse.domain.repository.Currency
 import com.smartfinanse.domain.repository.UserPreferencesRepository
+import android.content.Context
+import com.smartfinanse.presentation.theme.ThemePreferenceApplier
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +31,7 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val preferencesRepository: UserPreferencesRepository,
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao
@@ -51,6 +55,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setTheme(theme: AppTheme) {
         preferencesRepository.setTheme(theme)
+        ThemePreferenceApplier.apply(appContext)
     }
 
     fun setCurrency(currency: Currency) {

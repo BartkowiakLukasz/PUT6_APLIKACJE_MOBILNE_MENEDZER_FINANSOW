@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
@@ -72,6 +73,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
+    onNavigateToDashboard: () -> Unit,
     onNavigateToAdd: () -> Unit,
     onOpenDrawer: () -> Unit,
     viewModel: TransactionListViewModel = hiltViewModel()
@@ -189,11 +191,23 @@ fun TransactionListScreen(
                             contentDescription = "Menu"
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToDashboard) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Pulpit"
+                        )
+                    }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onNavigateToAdd) {
+            FloatingActionButton(
+                onClick = onNavigateToAdd,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Dodaj wydatek"

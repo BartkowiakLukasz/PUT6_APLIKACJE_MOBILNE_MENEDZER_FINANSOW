@@ -5,35 +5,20 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /**
- * Brand-specific colors not covered by Material [androidx.compose.material3.ColorScheme].
- * Use via [SmartFinanseTheme.extraColors] in Composables.
+ * Dashboard-only accents. Global chrome uses [androidx.compose.material3.MaterialTheme.colorScheme].
  */
 @Immutable
 data class SmartFinanseExtraColors(
-    val mintHeader: Color,
-    val onMintHeader: Color,
-    val dashboardBackground: Color,
-    val fabContainer: Color,
-    val fabContent: Color,
-    val filterChipSelected: Color
+    /** Tinted surface for the chart card only */
+    val chartCardBackground: Color
 )
 
 val LightExtraColors = SmartFinanseExtraColors(
-    mintHeader = MintPrimary,
-    onMintHeader = MintOnPrimary,
-    dashboardBackground = DashboardBackgroundLight,
-    fabContainer = FabAccent,
-    fabContent = FabOnAccentLight,
-    filterChipSelected = MintPrimary
+    chartCardBackground = ChartCardLight
 )
 
 val DarkExtraColors = SmartFinanseExtraColors(
-    mintHeader = MintPrimaryDark,
-    onMintHeader = MintOnPrimaryDark,
-    dashboardBackground = DashboardBackgroundDark,
-    fabContainer = FabAccent,
-    fabContent = FabOnAccentDark,
-    filterChipSelected = MintPrimaryDark
+    chartCardBackground = ChartCardDark
 )
 
 val LocalSmartFinanseExtraColors = staticCompositionLocalOf { LightExtraColors }

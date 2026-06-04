@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -295,7 +296,11 @@ private fun AddTransactionContent(
         Button(
             onClick = onSaveClick,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            enabled = !uiState.isSaving
+            enabled = !uiState.isSaving,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
             Text("Zapisz wydatek")
         }

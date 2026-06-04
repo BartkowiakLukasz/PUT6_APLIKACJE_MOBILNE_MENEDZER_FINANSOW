@@ -38,12 +38,12 @@ class DashboardViewModel @Inject constructor(
     }
 
     fun setCustomTimeFilter(startDate: Long, endDate: Long) {
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 selectedFilter = TimeFilter.CUSTOM,
                 customStartDate = startDate,
                 customEndDate = endDate
-            ) 
+            )
         }
         processTransactions()
     }
@@ -51,7 +51,7 @@ class DashboardViewModel @Inject constructor(
     private fun observeTransactions() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            
+
             getAllTransactionsUseCase()
                 .catch { error ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
@@ -65,14 +65,26 @@ class DashboardViewModel @Inject constructor(
 
     private fun processTransactions() {
         val filtered = filterByTime(allTransactionsList, _uiState.value.selectedFilter)
-        
-        // Tylko wydatki (isExpense = true) na wykresie
-        val expenses = filtered.filter { it.category?.isExpense == true }
-        
+
+        val income = filtered
+            .filter { it.category?.isExpense == false }
+            .sumOf { it.transaction.amount }
+
+        val expenses = filtered
+            .filter { it.category?.isExpense == true }
+
         val totalExpenses = expenses.sumOf { it.transaction.amount }
-        
+        val netBalance = income - totalExpenses
+
+        val cashTotal = expenses.filter { it.transaction.isCash }.sumOf { it.transaction.amount }
+        val cashPercent = if (totalExpenses > 0) {
+            ((cashTotal * 100) / totalExpenses).toInt()
+        } else {
+            0
+        }
+
         val grouped = expenses.groupBy { it.category?.id ?: -1L }
-        
+
         val breakdown = grouped.map { (catId, txs) ->
             val firstCat = txs.firstOrNull()?.category
             val catTotal = txs.sumOf { it.transaction.amount }
@@ -84,25 +96,33 @@ class DashboardViewModel @Inject constructor(
                 percentage = if (totalExpenses > 0) catTotal.toFloat() / totalExpenses.toFloat() else 0f
             )
         }.sortedByDescending { it.totalAmount }
-        
-        _uiState.update { 
+
+        _uiState.update {
             it.copy(
                 isLoading = false,
+                netBalance = netBalance,
+                totalIncome = income,
+                totalExpenses = totalExpenses,
+                cashExpensePercent = cashPercent,
+                cardExpensePercent = 100 - cashPercent,
                 totalAmount = totalExpenses,
                 categoryBreakdown = breakdown,
                 errorMessage = null
-            ) 
+            )
         }
     }
 
-    private fun filterByTime(transactions: List<TransactionWithCategory>, filter: TimeFilter): List<TransactionWithCategory> {
+    private fun filterByTime(
+        transactions: List<TransactionWithCategory>,
+        filter: TimeFilter
+    ): List<TransactionWithCategory> {
         val startOfToday = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
-        
+
         return transactions.filter { txWithCat ->
             val txDate = txWithCat.transaction.date
             when (filter) {
@@ -143,7 +163,6 @@ class DashboardViewModel @Inject constructor(
                     val start = _uiState.value.customStartDate
                     val end = _uiState.value.customEndDate
                     if (start != null && end != null) {
-                        // Include the entire end day
                         val endOfDay = Calendar.getInstance().apply {
                             timeInMillis = end
                             set(Calendar.HOUR_OF_DAY, 23)
@@ -153,7 +172,7 @@ class DashboardViewModel @Inject constructor(
                         }.timeInMillis
                         txDate in start..endOfDay
                     } else {
-                        true // No range selected yet, show all or could show none
+                        true
                     }
                 }
             }

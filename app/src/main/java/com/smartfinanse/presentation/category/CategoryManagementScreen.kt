@@ -133,7 +133,11 @@ fun CategoryManagementScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.openSheetForAdd() }) {
+            FloatingActionButton(
+                onClick = { viewModel.openSheetForAdd() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Dodaj Kategorię")
             }
         }

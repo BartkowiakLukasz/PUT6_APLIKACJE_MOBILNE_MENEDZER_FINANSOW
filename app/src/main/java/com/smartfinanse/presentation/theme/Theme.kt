@@ -87,6 +87,7 @@ fun SmartFinanseTheme(
     val extraColors = if (darkTheme) DarkExtraColors else LightExtraColors
 
     CompositionLocalProvider(LocalSmartFinanseExtraColors provides extraColors) {
+        ConfigureSystemBars(darkTheme = darkTheme)
         MaterialTheme(
             colorScheme = colorScheme,
             typography = SmartFinanseTypography,

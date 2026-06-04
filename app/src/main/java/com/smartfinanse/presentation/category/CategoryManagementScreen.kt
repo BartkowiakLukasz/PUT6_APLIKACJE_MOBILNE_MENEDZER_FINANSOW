@@ -207,11 +207,8 @@ fun CategoryIconRenderer(
     colorHex: String,
     modifier: Modifier = Modifier
 ) {
-    val color = try {
-        Color(android.graphics.Color.parseColor(colorHex))
-    } catch (e: Exception) {
-        Color.Gray
-    }
+    val fallback = MaterialTheme.colorScheme.onSurfaceVariant
+    val color = parseCategoryHexColor(colorHex, fallback)
 
     Box(
         modifier = modifier
@@ -376,7 +373,8 @@ private fun CategoryFormSheet(
         ) {
             items(presetColors) { hex ->
                 val isSelected = uiState.selectedColorHex == hex
-                val color = try { Color(android.graphics.Color.parseColor(hex)) } catch (e: Exception) { Color.Gray }
+                val fallback = MaterialTheme.colorScheme.onSurfaceVariant
+                val color = parseCategoryHexColor(hex, fallback)
                 
                 Box(
                     modifier = Modifier
@@ -403,5 +401,13 @@ private fun CategoryFormSheet(
         }
         
         Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+private fun parseCategoryHexColor(hex: String, fallback: Color): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(hex))
+    } catch (e: Exception) {
+        fallback
     }
 }

@@ -12,3 +12,21 @@ local.properties
 # Aplikacja - build
 /app/build/
 architecture.md
+
+*.apk
+*.aab
+*.ap_
+*.dex
+
+.kotlin/
+.kotlin_module/
+.kotlin_module_cache/
+.kotlin_module_cache_2/
+.kotlin_module_cache_3/
+.kotlin_module_cache_4/
+.kotlin_module_cache_5/
+.kotlin_module_cache_6/
+.kotlin_module_cache_7/
+.kotlin_module_cache_8/
+.kotlin_module_cache_9/
+.kotlin_module_cache_10/

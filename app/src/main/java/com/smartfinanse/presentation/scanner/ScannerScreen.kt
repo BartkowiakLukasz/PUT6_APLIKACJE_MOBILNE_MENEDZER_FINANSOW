@@ -6,7 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +17,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.smartfinanse.presentation.common.SmartFinanseTopAppBar
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
@@ -24,7 +25,7 @@ import java.io.File
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ScannerScreen(
-    onOpenDrawer: () -> Unit,
+    onNavigateBack: () -> Unit,
     onNavigateToAddWithPreFill: (amount: Double, description: String, date: String?, categoryId: Long?, isCash: Boolean?) -> Unit,
     viewModel: ScannerViewModel = hiltViewModel()
 ) {
@@ -82,11 +83,14 @@ fun ScannerScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            SmartFinanseTopAppBar(
                 title = { Text("Skaner Paragonów") },
                 navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Wstecz"
+                        )
                     }
                 }
             )

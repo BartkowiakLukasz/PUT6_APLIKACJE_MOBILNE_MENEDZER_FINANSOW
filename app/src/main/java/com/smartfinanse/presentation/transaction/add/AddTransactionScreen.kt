@@ -43,7 +43,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
+import com.smartfinanse.presentation.common.SmartFinanseTopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,7 +85,7 @@ fun AddTransactionScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            SmartFinanseTopAppBar(
                 title = { Text("Dodaj wydatek") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {

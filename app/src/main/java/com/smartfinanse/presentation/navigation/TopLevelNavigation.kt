@@ -4,8 +4,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 /**
- * Navigate between main destinations (dashboard, history, settings, …)
- * without breaking the back stack or saved state.
+ * Navigate between bottom-nav root destinations without breaking the back stack.
  */
 fun NavHostController.navigateTopLevel(route: String) {
     navigate(route) {
@@ -14,5 +13,12 @@ fun NavHostController.navigateTopLevel(route: String) {
         }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+/** Push a secondary screen (from Więcej, FAB, etc.) */
+fun NavHostController.navigateSecondary(route: String) {
+    navigate(route) {
+        launchSingleTop = true
     }
 }

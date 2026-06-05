@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartfinanse.R
 import com.smartfinanse.domain.model.Category
 import com.smartfinanse.presentation.dashboard.TimeFilter
+import com.smartfinanse.presentation.transaction.add.AddTransactionTypeSheet
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -71,12 +72,14 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionListScreen(
-    onNavigateToAdd: () -> Unit,
+    onNavigateToAddExpense: () -> Unit,
+    onNavigateToAddIncome: () -> Unit,
     viewModel: TransactionListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDateRangePicker by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
+    var showAddTypeSheet by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
 
     if (showDateRangePicker) {
@@ -184,13 +187,13 @@ fun TransactionListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onNavigateToAdd,
+                onClick = { showAddTypeSheet = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Dodaj wydatek"
+                    contentDescription = stringResource(R.string.add_transaction_sheet_title)
                 )
             }
         }
@@ -209,6 +212,20 @@ fun TransactionListScreen(
                 }
             },
             modifier = Modifier.padding(innerPadding)
+        )
+    }
+
+    if (showAddTypeSheet) {
+        AddTransactionTypeSheet(
+            onDismiss = { showAddTypeSheet = false },
+            onAddExpense = {
+                showAddTypeSheet = false
+                onNavigateToAddExpense()
+            },
+            onAddIncome = {
+                showAddTypeSheet = false
+                onNavigateToAddIncome()
+            }
         )
     }
 }
@@ -356,15 +373,26 @@ private fun TransactionListItem(transaction: TransactionItemUi) {
         if (transaction.isCash) R.string.payment_cash else R.string.payment_card
     )
 
+    val typeLabel = stringResource(
+        if (transaction.isExpense) R.string.transaction_type_expense
+        else R.string.transaction_type_income
+    )
+    val amountColor = if (transaction.isExpense) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
     ListItem(
         headlineContent = { Text(transaction.title) },
         supportingContent = {
-            Text("$categoryLabel · $paymentLabel")
+            Text("$typeLabel · $categoryLabel · $paymentLabel")
         },
         trailingContent = {
             Text(
                 text = transaction.amountFormatted,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleMedium,
+                color = amountColor
             )
         }
     )

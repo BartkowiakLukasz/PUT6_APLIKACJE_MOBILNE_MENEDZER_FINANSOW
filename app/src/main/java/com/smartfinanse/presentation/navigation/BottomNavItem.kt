@@ -34,6 +34,11 @@ enum class BottomNavItem(
             "settings"
         )
 
-        fun showsBottomBar(route: String?): Boolean = fromRoute(route) != null
+        fun showsBottomBar(route: String?): Boolean {
+            if (route == null) return false
+            if (route.startsWith("add")) return false
+            if (route.startsWith("dashboard/")) return false
+            return fromRoute(route) != null
+        }
     }
 }

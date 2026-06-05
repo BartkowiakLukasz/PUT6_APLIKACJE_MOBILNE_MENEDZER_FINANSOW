@@ -11,6 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,20 +27,34 @@ class CategoryManagementViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(CategoryManagementUiState())
     val uiState: StateFlow<CategoryManagementUiState> = _uiState.asStateFlow()
+    private var categoriesJob: Job? = null
 
     init {
         observeCategories()
     }
 
+    fun selectExpenseTab() {
+        if (_uiState.value.managingExpenses) return
+        _uiState.update { it.copy(managingExpenses = true) }
+        observeCategories()
+    }
+
+    fun selectIncomeTab() {
+        if (!_uiState.value.managingExpenses) return
+        _uiState.update { it.copy(managingExpenses = false) }
+        observeCategories()
+    }
+
     private fun observeCategories() {
-        viewModelScope.launch {
-            categoryRepository.getCategories(true)
+        categoriesJob?.cancel()
+        categoriesJob = viewModelScope.launch {
+            categoryRepository.getCategories(_uiState.value.managingExpenses)
                 .catch { /* Handle error */ }
-                .collect { expenses ->
+                .collect { categories ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            categories = expenses
+                            categories = categories
                         )
                     }
                 }
@@ -47,14 +62,15 @@ class CategoryManagementViewModel @Inject constructor(
     }
 
     fun openSheetForAdd() {
+        val isExpense = _uiState.value.managingExpenses
         _uiState.update {
             it.copy(
                 isSheetOpen = true,
                 isEditing = false,
                 editingCategoryId = null,
                 nameInput = "",
-                selectedIconName = "ic_food",
-                selectedColorHex = "#FF9800"
+                selectedIconName = if (isExpense) "ic_food" else "ic_work",
+                selectedColorHex = if (isExpense) "#FF9800" else "#1B5E20"
             )
         }
     }
@@ -103,12 +119,12 @@ class CategoryManagementViewModel @Inject constructor(
             val fileName = "category_icon_${System.currentTimeMillis()}.jpg"
             val file = File(context.filesDir, fileName)
             val outputStream = FileOutputStream(file)
-            
+
             inputStream?.copyTo(outputStream)
-            
+
             inputStream?.close()
             outputStream.close()
-            
+
             "file://${file.absolutePath}"
         } catch (e: Exception) {
             e.printStackTrace()
@@ -120,11 +136,18 @@ class CategoryManagementViewModel @Inject constructor(
         val state = _uiState.value
         if (state.nameInput.isBlank()) return
 
+        val isExpense = if (state.isEditing) {
+            state.categories.find { it.id == state.editingCategoryId }?.isExpense
+                ?: state.managingExpenses
+        } else {
+            state.managingExpenses
+        }
+
         val category = Category(
             id = state.editingCategoryId ?: 0L,
             name = state.nameInput.trim(),
             iconName = state.selectedIconName,
-            isExpense = true, // Force all to be expenses
+            isExpense = isExpense,
             colorHex = state.selectedColorHex
         )
 

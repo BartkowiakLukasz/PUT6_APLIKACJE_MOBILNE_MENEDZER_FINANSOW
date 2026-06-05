@@ -30,6 +30,9 @@ class AddTransactionViewModel @Inject constructor(
     val uiState: StateFlow<AddTransactionUiState> = _uiState.asStateFlow()
 
     init {
+        val transactionType = savedStateHandle.get<String>("transactionType")
+        val isExpense = transactionType != "income"
+
         val amount = savedStateHandle.get<String>("amount") ?: ""
         val description = savedStateHandle.get<String>("description") ?: ""
         val dateStr = savedStateHandle.get<String>("date")
@@ -50,8 +53,9 @@ class AddTransactionViewModel @Inject constructor(
         val isCashStr = savedStateHandle.get<String>("isCash")
         val isCashParam = if (isCashStr != "null") isCashStr?.toBooleanStrictOrNull() else null
 
-        _uiState.update { 
+        _uiState.update {
             it.copy(
+                isExpense = isExpense,
                 amount = amount,
                 description = description,
                 date = dateMillis,
@@ -89,11 +93,6 @@ class AddTransactionViewModel @Inject constructor(
 
     fun onIsRecurringChange(isRecurring: Boolean) {
         _uiState.update { it.copy(isRecurring = isRecurring) }
-    }
-
-    fun onIsExpenseChange(isExpense: Boolean) {
-        _uiState.update { it.copy(isExpense = isExpense) }
-        loadCategories()
     }
 
     fun onCategorySelected(categoryId: Long) {
@@ -148,7 +147,7 @@ class AddTransactionViewModel @Inject constructor(
         }
 
         if (state.selectedCategoryId == null) {
-            categoryError = "Wybierz kategorię wydatku."
+            categoryError = "Wybierz kategorię."
             hasError = true
         }
 

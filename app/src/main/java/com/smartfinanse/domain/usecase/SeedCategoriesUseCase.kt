@@ -8,5 +8,6 @@ class SeedCategoriesUseCase @Inject constructor(
 ) {
     suspend operator fun invoke() {
         categoryRepository.seedCategoriesIfEmpty()
+        categoryRepository.seedIncomeCategoriesIfMissing()
     }
 }

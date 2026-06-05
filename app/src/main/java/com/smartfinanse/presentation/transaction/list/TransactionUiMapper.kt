@@ -13,6 +13,7 @@ fun TransactionWithCategory.toUi(): TransactionItemUi {
         categoryId = category?.id,
         amountFormatted = MoneyFormatter.format(transaction.amount, isExpense),
         dateFormatted = DateFormatter.format(transaction.date),
-        isCash = transaction.isCash
+        isCash = transaction.isCash,
+        isExpense = isExpense
     )
 }

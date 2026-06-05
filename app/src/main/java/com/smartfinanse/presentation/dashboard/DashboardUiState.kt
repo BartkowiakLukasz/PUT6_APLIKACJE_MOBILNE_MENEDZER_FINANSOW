@@ -9,6 +9,12 @@ enum class TimeFilter(val label: String) {
     CUSTOM("Zakres")
 }
 
+enum class DashboardContentFilter {
+    EXPENSES_ONLY,
+    BOTH,
+    INCOME_ONLY
+}
+
 data class CategoryBreakdownItem(
     val categoryId: Long,
     val name: String,
@@ -22,13 +28,13 @@ data class DashboardUiState(
     val selectedFilter: TimeFilter = TimeFilter.MONTH,
     val customStartDate: Long? = null,
     val customEndDate: Long? = null,
-    /** Net balance in period: income − expenses (grosze) */
+    val contentFilter: DashboardContentFilter = DashboardContentFilter.BOTH,
     val netBalance: Long = 0L,
     val totalIncome: Long = 0L,
     val totalExpenses: Long = 0L,
     val cashExpensePercent: Int = 0,
     val cardExpensePercent: Int = 0,
-    val totalAmount: Long = 0L,
-    val categoryBreakdown: List<CategoryBreakdownItem> = emptyList(),
+    val expenseBreakdown: List<CategoryBreakdownItem> = emptyList(),
+    val incomeBreakdown: List<CategoryBreakdownItem> = emptyList(),
     val errorMessage: String? = null
 )

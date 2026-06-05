@@ -25,6 +25,12 @@ class CategoryRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun seedIncomeCategoriesIfMissing() {
+        if (categoryDao.countIncome() == 0) {
+            categoryDao.insertAll(DefaultCategories.incomeCategories())
+        }
+    }
+
     override suspend fun addCategory(category: Category): Long {
         return categoryDao.insertCategory(category.toEntity())
     }

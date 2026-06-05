@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryRepository {
     fun getCategories(isExpense: Boolean): Flow<List<Category>>
     suspend fun seedCategoriesIfEmpty()
+    suspend fun seedIncomeCategoriesIfMissing()
     suspend fun addCategory(category: Category): Long
     suspend fun updateCategory(category: Category)
 }

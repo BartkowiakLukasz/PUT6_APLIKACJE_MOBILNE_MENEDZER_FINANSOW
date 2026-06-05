@@ -44,6 +44,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import androidx.compose.ui.res.stringResource
 import com.smartfinanse.R
 import com.smartfinanse.domain.model.Category
 
@@ -150,6 +153,21 @@ fun CategoryManagementScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            TabRow(
+                selectedTabIndex = if (uiState.managingExpenses) 0 else 1
+            ) {
+                Tab(
+                    selected = uiState.managingExpenses,
+                    onClick = { viewModel.selectExpenseTab() },
+                    text = { Text(stringResource(R.string.category_tab_expenses)) }
+                )
+                Tab(
+                    selected = !uiState.managingExpenses,
+                    onClick = { viewModel.selectIncomeTab() },
+                    text = { Text(stringResource(R.string.category_tab_income)) }
+                )
+            }
+
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -255,6 +273,7 @@ fun getMaterialIconByName(name: String): ImageVector {
         "ic_shopping" -> Icons.Default.ShoppingCart
         "ic_home" -> Icons.Default.Home
         "ic_work" -> Icons.Default.Work
+        "ic_star" -> Icons.Default.Star
         else -> Icons.Rounded.RoundedStar
     }
 }

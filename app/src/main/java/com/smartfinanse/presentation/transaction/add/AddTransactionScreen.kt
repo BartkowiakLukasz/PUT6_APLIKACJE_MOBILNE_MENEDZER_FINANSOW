@@ -57,6 +57,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import com.smartfinanse.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -86,7 +87,14 @@ fun AddTransactionScreen(
     Scaffold(
         topBar = {
             SmartFinanseTopAppBar(
-                title = { Text("Dodaj wydatek") },
+                title = {
+                    Text(
+                        stringResource(
+                            if (uiState.isExpense) R.string.add_expense_title
+                            else R.string.add_income_title
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Wróć")
@@ -106,7 +114,8 @@ fun AddTransactionScreen(
             onCategorySelected = viewModel::onCategorySelected,
             onSaveClick = viewModel::saveTransaction,
             onShowAddCategoryClick = { viewModel.showAddCategoryDialog(true) },
-            onNavigateToScanner = onNavigateToScanner
+            onNavigateToScanner = onNavigateToScanner,
+            showScanner = uiState.isExpense
         )
 
         if (uiState.showAddCategoryDialog) {
@@ -131,7 +140,8 @@ private fun AddTransactionContent(
     onCategorySelected: (Long) -> Unit,
     onSaveClick: () -> Unit,
     onShowAddCategoryClick: () -> Unit,
-    onNavigateToScanner: () -> Unit
+    onNavigateToScanner: () -> Unit,
+    showScanner: Boolean
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -146,13 +156,14 @@ private fun AddTransactionContent(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // OCR Button
-        Button(
-            onClick = onNavigateToScanner,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text("Zeskanuj paragon (OCR & AI)")
+        if (showScanner) {
+            Button(
+                onClick = onNavigateToScanner,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Zeskanuj paragon (OCR & AI)")
+            }
         }
 
         OutlinedTextField(
@@ -302,7 +313,11 @@ private fun AddTransactionContent(
                 contentColor = MaterialTheme.colorScheme.onPrimary
             )
         ) {
-            Text("Zapisz wydatek")
+            Text(
+                stringResource(
+                    if (uiState.isExpense) R.string.save_expense else R.string.save_income
+                )
+            )
         }
     }
 }

@@ -20,6 +20,21 @@ val SurfaceDark = Color(0xFF1E1E1E)
 val ChartCardLight = Color(0xFFE8F5E9)
 val ChartCardDark = Color(0xFF1A2E1C)
 
+// Dashboard hero gradient
+val HeroGradientStartLight = Color(0xFF43A047)
+val HeroGradientEndLight = Color(0xFF1B5E20)
+val HeroGradientStartDark = Color(0xFF1B5E20)
+val HeroGradientEndDark = Color(0xFF0A1F0C)
+
+// Sliding segmented control (dashboard lists filter)
+val SegmentTrackDark = Color(0xFF1E1E1E)
+val SegmentThumbDark = Color(0xFF2C2C2C)
+val SegmentTextInactiveDark = Color(0xFF9E9E9E)
+
+val SegmentTrackLight = Color(0xFFE8ECE9)
+val SegmentThumbLight = Color(0xFFFFFFFF)
+val SegmentTextInactiveLight = Color(0xFF757575)
+
 // Neutrals
 val OnSurfaceLight = Color(0xFF1C1B1F)
 val OnSurfaceDark = Color(0xFFE6E1E5)

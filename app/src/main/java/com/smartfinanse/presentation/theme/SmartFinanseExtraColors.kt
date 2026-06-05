@@ -4,21 +4,38 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-/**
- * Dashboard-only accents. Global chrome uses [androidx.compose.material3.MaterialTheme.colorScheme].
- */
 @Immutable
 data class SmartFinanseExtraColors(
-    /** Tinted surface for the chart card only */
-    val chartCardBackground: Color
+    val chartCardBackground: Color,
+    val dashboardHeroGradientStart: Color,
+    val dashboardHeroGradientEnd: Color,
+    val dashboardHeroOnGradient: Color,
+    val segmentTrack: Color,
+    val segmentThumb: Color,
+    val segmentTextSelected: Color,
+    val segmentTextUnselected: Color
 )
 
 val LightExtraColors = SmartFinanseExtraColors(
-    chartCardBackground = ChartCardLight
+    chartCardBackground = ChartCardLight,
+    dashboardHeroGradientStart = HeroGradientStartLight,
+    dashboardHeroGradientEnd = HeroGradientEndLight,
+    dashboardHeroOnGradient = Color.White,
+    segmentTrack = SegmentTrackLight,
+    segmentThumb = SegmentThumbLight,
+    segmentTextSelected = OnSurfaceLight,
+    segmentTextUnselected = SegmentTextInactiveLight
 )
 
 val DarkExtraColors = SmartFinanseExtraColors(
-    chartCardBackground = ChartCardDark
+    chartCardBackground = ChartCardDark,
+    dashboardHeroGradientStart = HeroGradientStartDark,
+    dashboardHeroGradientEnd = HeroGradientEndDark,
+    dashboardHeroOnGradient = Color.White,
+    segmentTrack = SegmentTrackDark,
+    segmentThumb = SegmentThumbDark,
+    segmentTextSelected = Color.White,
+    segmentTextUnselected = SegmentTextInactiveDark
 )
 
 val LocalSmartFinanseExtraColors = staticCompositionLocalOf { LightExtraColors }

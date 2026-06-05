@@ -22,5 +22,6 @@ data class TransactionItemUi(
     val categoryId: Long?,
     val amountFormatted: String,
     val dateFormatted: String,
-    val isCash: Boolean
+    val isCash: Boolean,
+    val isExpense: Boolean
 )

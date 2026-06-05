@@ -16,6 +16,9 @@ interface CategoryDao {
     @Query("SELECT COUNT(*) FROM categories")
     suspend fun count(): Int
 
+    @Query("SELECT COUNT(*) FROM categories WHERE isExpense = 0")
+    suspend fun countIncome(): Int
+
     @Query("SELECT * FROM categories WHERE isExpense = :isExpense ORDER BY name ASC")
     fun getByExpenseType(isExpense: Boolean): Flow<List<CategoryEntity>>
 

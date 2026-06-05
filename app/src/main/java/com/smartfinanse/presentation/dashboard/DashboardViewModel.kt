@@ -48,6 +48,10 @@ class DashboardViewModel @Inject constructor(
         processTransactions()
     }
 
+    fun setContentFilter(filter: DashboardContentFilter) {
+        _uiState.update { it.copy(contentFilter = filter) }
+    }
+
     private fun observeTransactions() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -66,50 +70,58 @@ class DashboardViewModel @Inject constructor(
     private fun processTransactions() {
         val filtered = filterByTime(allTransactionsList, _uiState.value.selectedFilter)
 
-        val income = filtered
-            .filter { it.category?.isExpense == false }
-            .sumOf { it.transaction.amount }
+        val incomeTx = filtered.filter { it.category?.isExpense == false }
+        val expenseTx = filtered.filter { it.category?.isExpense == true }
 
-        val expenses = filtered
-            .filter { it.category?.isExpense == true }
+        val totalIncome = incomeTx.sumOf { it.transaction.amount }
+        val totalExpenses = expenseTx.sumOf { it.transaction.amount }
+        val netBalance = totalIncome - totalExpenses
 
-        val totalExpenses = expenses.sumOf { it.transaction.amount }
-        val netBalance = income - totalExpenses
-
-        val cashTotal = expenses.filter { it.transaction.isCash }.sumOf { it.transaction.amount }
+        val cashTotal = expenseTx.filter { it.transaction.isCash }.sumOf { it.transaction.amount }
         val cashPercent = if (totalExpenses > 0) {
             ((cashTotal * 100) / totalExpenses).toInt()
         } else {
             0
         }
 
-        val grouped = expenses.groupBy { it.category?.id ?: -1L }
-
-        val breakdown = grouped.map { (catId, txs) ->
-            val firstCat = txs.firstOrNull()?.category
-            val catTotal = txs.sumOf { it.transaction.amount }
-            CategoryBreakdownItem(
-                categoryId = catId,
-                name = firstCat?.name ?: "Brak kategorii",
-                colorHex = firstCat?.colorHex ?: "#888888",
-                totalAmount = catTotal,
-                percentage = if (totalExpenses > 0) catTotal.toFloat() / totalExpenses.toFloat() else 0f
-            )
-        }.sortedByDescending { it.totalAmount }
+        val expenseBreakdown = buildCategoryBreakdown(expenseTx, totalExpenses)
+        val incomeBreakdown = buildCategoryBreakdown(incomeTx, totalIncome)
 
         _uiState.update {
             it.copy(
                 isLoading = false,
                 netBalance = netBalance,
-                totalIncome = income,
+                totalIncome = totalIncome,
                 totalExpenses = totalExpenses,
                 cashExpensePercent = cashPercent,
                 cardExpensePercent = 100 - cashPercent,
-                totalAmount = totalExpenses,
-                categoryBreakdown = breakdown,
+                expenseBreakdown = expenseBreakdown,
+                incomeBreakdown = incomeBreakdown,
                 errorMessage = null
             )
         }
+    }
+
+    private fun buildCategoryBreakdown(
+        transactions: List<TransactionWithCategory>,
+        total: Long
+    ): List<CategoryBreakdownItem> {
+        if (total == 0L) return emptyList()
+
+        return transactions
+            .groupBy { it.category?.id ?: -1L }
+            .map { (catId, txs) ->
+                val firstCat = txs.firstOrNull()?.category
+                val catTotal = txs.sumOf { it.transaction.amount }
+                CategoryBreakdownItem(
+                    categoryId = catId,
+                    name = firstCat?.name ?: "Brak kategorii",
+                    colorHex = firstCat?.colorHex ?: "#888888",
+                    totalAmount = catTotal,
+                    percentage = catTotal.toFloat() / total.toFloat()
+                )
+            }
+            .sortedByDescending { it.totalAmount }
     }
 
     private fun filterByTime(

@@ -2,8 +2,11 @@ package com.smartfinanse.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.smartfinanse.data.local.SmartFinanseDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.smartfinanse.data.local.dao.CategoryDao
+import com.smartfinanse.data.local.dao.StoreDao
 import com.smartfinanse.data.local.dao.TransactionDao
 import dagger.Module
 import dagger.Provides
@@ -34,4 +37,8 @@ object DatabaseModule {
     @Provides
     fun provideTransactionDao(database: SmartFinanseDatabase): TransactionDao =
         database.transactionDao
+
+    @Provides
+    fun provideStoreDao(database: SmartFinanseDatabase): StoreDao =
+        database.storeDao
 }

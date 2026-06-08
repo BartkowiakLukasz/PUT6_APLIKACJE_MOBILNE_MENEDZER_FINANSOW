@@ -3,6 +3,7 @@ package com.smartfinanse
 import android.app.Application
 import android.content.Context
 import com.smartfinanse.domain.usecase.SeedCategoriesUseCase
+import com.smartfinanse.domain.usecase.SeedStoresUseCase
 import com.smartfinanse.presentation.theme.ThemePreferenceApplier
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -17,6 +18,9 @@ class SmartFinanseApplication : Application() {
     @Inject
     lateinit var seedCategoriesUseCase: SeedCategoriesUseCase
 
+    @Inject
+    lateinit var seedStoresUseCase: SeedStoresUseCase
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun attachBaseContext(base: Context) {
@@ -29,6 +33,7 @@ class SmartFinanseApplication : Application() {
         com.smartfinanse.utils.FileLogger.init(this)
         applicationScope.launch {
             seedCategoriesUseCase()
+            seedStoresUseCase()
         }
     }
 }

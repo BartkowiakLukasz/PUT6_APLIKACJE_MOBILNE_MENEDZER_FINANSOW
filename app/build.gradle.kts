@@ -96,6 +96,9 @@ dependencies {
 
     // ML Kit Text Recognition
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
+    
+    // ML Kit Document Scanner
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
 
     // Generative AI (Gemini SDK)
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")

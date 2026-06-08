@@ -48,6 +48,7 @@ import com.smartfinanse.presentation.transaction.add.AddTransactionTypeSheet
 fun DashboardScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToAddIncome: () -> Unit,
+    onNavigateToAddSubscription: () -> Unit,
     onNavigateToCharts: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -236,6 +237,10 @@ fun DashboardScreen(
             onAddIncome = {
                 showAddTypeSheet = false
                 onNavigateToAddIncome()
+            },
+            onAddSubscription = {
+                showAddTypeSheet = false
+                onNavigateToAddSubscription()
             }
         )
     }

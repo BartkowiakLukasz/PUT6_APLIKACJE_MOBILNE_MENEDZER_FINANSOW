@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 
 data class ParsedReceipt(
     val sklep: String,
+    val opis: String,
     val kwota: Double,
     val data: String?,
     val kategoria: String,
@@ -31,13 +32,14 @@ class ReceiptParserAi {
         val categoriesStr = availableCategories.joinToString(", ")
         
         val systemInstruction = """
-            Jesteś ekspertem finansowym. Otrzymasz zdjęcie paragonu. Twoim zadaniem jest wyciągnięcie z niego 4 informacji:
+            Jesteś ekspertem finansowym. Otrzymasz zdjęcie paragonu. Twoim zadaniem jest wyciągnięcie z niego 6 informacji:
             'sklep' - nazwa sprzedawcy (np. Biedronka, Orlen).
+            'opis' - krótki, jedno- lub dwuwyrazowy opis najważniejszych kupionych rzeczy (np. 'Produkty spożywcze', 'Paliwo', 'Chemia domowa').
             'kwota' - ostateczna kwota do zapłaty (tylko liczba, kropka jako separator dziesiętny). Zignoruj podatek VAT, resztę, czy podsumowania przed zniżkami. Szukaj 'Suma', 'Do zapłaty', 'Zapłacono'.
             'data' - data zakupu w formacie YYYY-MM-DD. Jeśli nie potrafisz jej znaleźć, zwróć null.
             'kategoria' - przypisz zakup do jednej z kategorii: [$categoriesStr]. Wybierz najbardziej pasującą lub 'Inne' jeśli nie pasuje żadna.
             'czyGotowka' - true jeśli płatność była gotówką, false jeśli płatność była kartą/blikiem/telefonem. Jeśli nie masz pewności, zwróć null.
-            Zwróć WYŁĄCZNIE poprawny JSON o strukturze: {"sklep": "", "kwota": 0.0, "data": "", "kategoria": "", "czyGotowka": null} i nie dodawaj żadnych innych znaków, znaczników Markdown ani wyjaśnień.
+            Zwróć WYŁĄCZNIE poprawny JSON o strukturze: {"sklep": "", "opis": "", "kwota": 0.0, "data": "", "kategoria": "", "czyGotowka": null} i nie dodawaj żadnych innych znaków, znaczników Markdown ani wyjaśnień.
         """.trimIndent()
 
         val model = GenerativeModel(

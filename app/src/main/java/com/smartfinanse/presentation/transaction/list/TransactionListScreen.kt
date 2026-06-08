@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -76,6 +77,7 @@ import java.util.Locale
 fun TransactionListScreen(
     onNavigateToAddExpense: () -> Unit,
     onNavigateToAddIncome: () -> Unit,
+    onNavigateToAddSubscription: () -> Unit,
     viewModel: TransactionListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -191,7 +193,8 @@ fun TransactionListScreen(
             FloatingActionButton(
                 onClick = { showAddTypeSheet = true },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -227,6 +230,10 @@ fun TransactionListScreen(
             onAddIncome = {
                 showAddTypeSheet = false
                 onNavigateToAddIncome()
+            },
+            onAddSubscription = {
+                showAddTypeSheet = false
+                onNavigateToAddSubscription()
             }
         )
     }

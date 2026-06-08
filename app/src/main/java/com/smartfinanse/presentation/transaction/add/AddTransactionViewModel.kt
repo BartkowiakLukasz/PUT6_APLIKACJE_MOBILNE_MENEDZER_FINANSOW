@@ -33,10 +33,12 @@ class AddTransactionViewModel @Inject constructor(
 
     init {
         val transactionType = savedStateHandle.get<String>("transactionType")
-        val isExpense = transactionType != "income"
+        val isSubscription = transactionType == "subscription"
+        val isExpense = transactionType != "income" // Zatem subskrypcja to też expense
 
         val amount = savedStateHandle.get<String>("amount") ?: ""
         val description = savedStateHandle.get<String>("description") ?: ""
+        val storeName = savedStateHandle.get<String>("storeName") ?: ""
         val dateStr = savedStateHandle.get<String>("date")
         
         var dateMillis = System.currentTimeMillis()
@@ -54,12 +56,19 @@ class AddTransactionViewModel @Inject constructor(
 
         val isCashStr = savedStateHandle.get<String>("isCash")
         val isCashParam = if (isCashStr != "null") isCashStr?.toBooleanStrictOrNull() else null
+        
+        val storeIdStr = savedStateHandle.get<String>("storeId")
+        val storeId = if (storeIdStr != "null") storeIdStr?.toLongOrNull() else null
 
         _uiState.update {
             it.copy(
                 isExpense = isExpense,
+                isSubscription = isSubscription,
+                isRecurring = isSubscription || it.isRecurring, // always true if subscription
                 amount = amount,
                 description = description,
+                storeSearchQuery = storeName,
+                selectedStoreId = storeId,
                 date = dateMillis,
                 selectedCategoryId = categoryId,
                 isCash = isCashParam ?: it.isCash

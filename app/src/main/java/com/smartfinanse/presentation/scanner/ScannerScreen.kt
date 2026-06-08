@@ -21,12 +21,26 @@ import com.smartfinanse.presentation.common.SmartFinanseTopAppBar
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import java.io.File
+import android.app.Activity
+import android.content.ContextWrapper
+import androidx.activity.result.IntentSenderRequest
+import android.content.Context
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+import kotlinx.coroutines.launch
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ScannerScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToAddWithPreFill: (amount: Double, description: String, date: String?, categoryId: Long?, isCash: Boolean?) -> Unit,
+    onNavigateToAddWithPreFill: (amount: Double, description: String, storeName: String, storeId: Long?, date: String?, categoryId: Long?, isCash: Boolean?) -> Unit,
     viewModel: ScannerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -35,17 +49,31 @@ fun ScannerScreen(
 
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
 
-    // Przygotowanie pliku docelowego na zdjęcie z aparatu
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
-    
-    val takePhotoLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicture(),
-        onResult = { success ->
-            if (success) {
-                photoUri?.let { uri -> viewModel.processReceipt(uri) }
+    val options = remember {
+        GmsDocumentScannerOptions.Builder()
+            .setGalleryImportAllowed(true) // Pozwala też wczytać z galerii bezpośrednio ze skanera
+            .setPageLimit(1)
+            .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+            .build()
+    }
+
+    val scanner = remember { GmsDocumentScanning.getClient(options) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val scannerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val resultData = GmsDocumentScanningResult.fromActivityResultIntent(result.data)
+            resultData?.pages?.let { pages ->
+                if (pages.isNotEmpty()) {
+                    val imageUri = pages[0].imageUri
+                    viewModel.processReceipt(imageUri)
+                }
             }
         }
-    )
+    }
 
     val pickGalleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -56,17 +84,16 @@ fun ScannerScreen(
         }
     )
 
-    fun createPhotoUri(): Uri {
-        val file = File(context.cacheDir, "receipt_photo_${System.currentTimeMillis()}.jpg")
-        return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-    }
+
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is ScannerUiState.Success -> {
                 onNavigateToAddWithPreFill(
                     state.parsedReceipt.kwota,
+                    state.parsedReceipt.opis,
                     state.parsedReceipt.sklep,
+                    state.resolvedStoreId,
                     state.parsedReceipt.data,
                     state.resolvedCategoryId,
                     state.parsedReceipt.czyGotowka
@@ -141,16 +168,26 @@ fun ScannerScreen(
                     ) {
                         Button(
                             onClick = {
-                                if (cameraPermissionState.status.isGranted) {
-                                    photoUri = createPhotoUri()
-                                    takePhotoLauncher.launch(photoUri!!)
+                                val activity = context.findActivity()
+                                if (activity != null) {
+                                    scanner.getStartScanIntent(activity)
+                                        .addOnSuccessListener { intentSender ->
+                                            scannerLauncher.launch(IntentSenderRequest.Builder(intentSender).build())
+                                        }
+                                        .addOnFailureListener { e ->
+                                            coroutineScope.launch {
+                                                snackbarHostState.showSnackbar("Nie udało się otworzyć skanera: ${e.message}")
+                                            }
+                                        }
                                 } else {
-                                    cameraPermissionState.launchPermissionRequest()
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Błąd kontekstu aplikacji")
+                                    }
                                 }
                             },
                             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                         ) {
-                            Text("Zrób Zdjęcie Aparatem")
+                            Text("Skanuj Paragon (ML Kit)")
                         }
 
                         OutlinedButton(
@@ -163,8 +200,7 @@ fun ScannerScreen(
                         if (!cameraPermissionState.status.isGranted) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                "Aplikacja potrzebuje dostępu do aparatu, by skanować paragony. " +
-                                "Możesz też użyć zdjęć z galerii.",
+                                "Mimo że skaner prosi o uprawnienia, w razie potrzeby system je obsłuży automatycznie.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

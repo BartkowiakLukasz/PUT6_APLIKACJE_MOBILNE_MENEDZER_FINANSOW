@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.smartfinanse.domain.model.TransactionWithCategory
 import com.smartfinanse.domain.usecase.GetAllTransactionsUseCase
+import com.smartfinanse.domain.usecase.ProcessSubscriptionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val getAllTransactionsUseCase: GetAllTransactionsUseCase
+    private val getAllTransactionsUseCase: GetAllTransactionsUseCase,
+    private val processSubscriptionsUseCase: ProcessSubscriptionsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -55,6 +57,12 @@ class DashboardViewModel @Inject constructor(
     private fun observeTransactions() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
+            
+            try {
+                processSubscriptionsUseCase()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 
             getAllTransactionsUseCase()
                 .catch { error ->
@@ -108,7 +116,10 @@ class DashboardViewModel @Inject constructor(
     ): List<CategoryBreakdownItem> {
         if (total == 0L) return emptyList()
 
-        return transactions
+        val regularTransactions = transactions.filter { it.transaction.subscriptionId == null }
+        val subscriptionTransactions = transactions.filter { it.transaction.subscriptionId != null }
+
+        val breakdown = regularTransactions
             .groupBy { it.category?.id ?: -1L }
             .map { (catId, txs) ->
                 val firstCat = txs.firstOrNull()?.category
@@ -120,8 +131,22 @@ class DashboardViewModel @Inject constructor(
                     totalAmount = catTotal,
                     percentage = catTotal.toFloat() / total.toFloat()
                 )
-            }
-            .sortedByDescending { it.totalAmount }
+            }.toMutableList()
+
+        if (subscriptionTransactions.isNotEmpty()) {
+            val subTotal = subscriptionTransactions.sumOf { it.transaction.amount }
+            breakdown.add(
+                CategoryBreakdownItem(
+                    categoryId = -999L, // Specjalne ID dla subskrypcji
+                    name = "Subskrypcje",
+                    colorHex = "#9C27B0", // Fioletowy
+                    totalAmount = subTotal,
+                    percentage = subTotal.toFloat() / total.toFloat()
+                )
+            )
+        }
+
+        return breakdown.sortedByDescending { it.totalAmount }
     }
 
     private fun filterByTime(

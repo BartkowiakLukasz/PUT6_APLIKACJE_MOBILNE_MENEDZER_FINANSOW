@@ -17,6 +17,7 @@ fun TransactionEntity.toDomain(): Transaction = Transaction(
     location = location,
     receiptImageUri = receiptImageUri,
     storeId = storeId,
+    subscriptionId = subscriptionId,
     recurringInterval = recurringInterval
 )
 
@@ -30,7 +31,8 @@ fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
     isRecurring = isRecurring,
     location = location,
     receiptImageUri = receiptImageUri,
-    storeId = storeId
+    storeId = storeId,
+    subscriptionId = subscriptionId
 ).apply { this.recurringInterval = this@toEntity.recurringInterval }
 
 fun TransactionWithDetails.toDomain(): TransactionWithCategory = TransactionWithCategory(

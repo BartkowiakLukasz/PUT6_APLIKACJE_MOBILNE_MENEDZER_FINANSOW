@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,11 +31,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import com.smartfinanse.presentation.common.SmartFinanseTopAppBar
+import com.smartfinanse.presentation.subscriptions.SubscriptionsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubscriptionsScreen(
+    onNavigateToAddSubscription: () -> Unit,
     viewModel: SubscriptionsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -44,6 +51,16 @@ fun SubscriptionsScreen(
             SmartFinanseTopAppBar(
                 title = { Text("Subskrypcje i Opłaty") }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onNavigateToAddSubscription,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Dodaj subskrypcję")
+            }
         }
     ) { paddingValues ->
         Box(
@@ -96,7 +113,7 @@ fun SubscriptionsScreen(
                         if (uiState.subscriptions.isEmpty()) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(
-                                    text = "Brak aktywnych subskrypcji.\nZaznacz 'Opłata cykliczna' przy dodawaniu transakcji.",
+                                    text = "Brak aktywnych subskrypcji.\nDodaj nową subskrypcję przy użyciu przycisku '+'.",
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )

@@ -2,10 +2,14 @@ package com.smartfinanse.di
 
 import com.smartfinanse.data.repository.CategoryRepositoryImpl
 import com.smartfinanse.data.repository.TransactionRepositoryImpl
-import com.smartfinanse.domain.repository.CategoryRepository
 import com.smartfinanse.data.repository.StoreRepositoryImpl
+import com.smartfinanse.data.repository.SubscriptionRepositoryImpl
+import com.smartfinanse.data.repository.SubscriptionCategoryRepositoryImpl
+import com.smartfinanse.domain.repository.CategoryRepository
 import com.smartfinanse.domain.repository.StoreRepository
 import com.smartfinanse.domain.repository.TransactionRepository
+import com.smartfinanse.domain.repository.SubscriptionRepository
+import com.smartfinanse.domain.repository.SubscriptionCategoryRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -27,4 +31,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindStoreRepository(impl: StoreRepositoryImpl): StoreRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSubscriptionRepository(impl: SubscriptionRepositoryImpl): SubscriptionRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSubscriptionCategoryRepository(impl: SubscriptionCategoryRepositoryImpl): SubscriptionCategoryRepository
 }

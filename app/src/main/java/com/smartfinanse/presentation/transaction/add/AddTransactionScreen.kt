@@ -109,7 +109,8 @@ fun AddTransactionScreen(
             SmartFinanseTopAppBar(
                 title = {
                     Text(
-                        stringResource(
+                        if (uiState.isSubscription) "Dodaj subskrypcję"
+                        else stringResource(
                             if (uiState.isExpense) R.string.add_expense_title
                             else R.string.add_income_title
                         )
@@ -338,17 +339,6 @@ private fun AddTransactionContent(
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Opłata cykliczna (np. subskrypcja)", style = MaterialTheme.typography.bodyLarge)
-                Switch(
-                    checked = uiState.isRecurring,
-                    onCheckedChange = onIsRecurringChange
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))

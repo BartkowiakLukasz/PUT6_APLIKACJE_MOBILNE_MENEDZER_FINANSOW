@@ -35,6 +35,7 @@ import com.smartfinanse.presentation.store.add.AddStoreScreen
 import com.smartfinanse.presentation.store.management.StoreManagementScreen
 import com.smartfinanse.presentation.transaction.add.AddTransactionScreen
 import com.smartfinanse.presentation.transaction.list.TransactionListScreen
+import com.smartfinanse.presentation.subscription.add.AddSubscriptionScreen
 
 @Composable
 fun SmartFinanseNavHost(
@@ -59,6 +60,7 @@ fun SmartFinanseNavHost(
                 DashboardScreen(
                     onNavigateToAddExpense = { navController.navigateSecondary("add/expense") },
                     onNavigateToAddIncome = { navController.navigateSecondary("add/income") },
+                    onNavigateToAddSubscription = { navController.navigateSecondary("add/subscription") },
                     onNavigateToCharts = { navController.navigateSecondary("dashboard/charts") }
                 )
             }
@@ -72,12 +74,15 @@ fun SmartFinanseNavHost(
                 )
             }
             composable("subscriptions") {
-                SubscriptionsScreen()
+                SubscriptionsScreen(
+                    onNavigateToAddSubscription = { navController.navigateSecondary("add/subscription") }
+                )
             }
             composable(BottomNavItem.HISTORY.route) {
                 TransactionListScreen(
                     onNavigateToAddExpense = { navController.navigateSecondary("add/expense") },
-                    onNavigateToAddIncome = { navController.navigateSecondary("add/income") }
+                    onNavigateToAddIncome = { navController.navigateSecondary("add/income") },
+                    onNavigateToAddSubscription = { navController.navigateSecondary("add/subscription") }
                 )
             }
             composable(BottomNavItem.MORE.route) {
@@ -97,12 +102,19 @@ fun SmartFinanseNavHost(
                     }
                 )
             }
+            composable("add/subscription") {
+                AddSubscriptionScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
             composable(
-                route = "add/{transactionType}?amount={amount}&description={description}&date={date}&categoryId={categoryId}&isCash={isCash}",
+                route = "add/{transactionType}?amount={amount}&description={description}&storeName={storeName}&storeId={storeId}&date={date}&categoryId={categoryId}&isCash={isCash}",
                 arguments = listOf(
                     navArgument("transactionType") { type = NavType.StringType },
                     navArgument("amount") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("description") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("storeName") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("storeId") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("date") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("categoryId") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("isCash") { type = NavType.StringType; nullable = true; defaultValue = null }
@@ -156,14 +168,16 @@ fun SmartFinanseNavHost(
             composable("scanner") {
                 ScannerScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToAddWithPreFill = { amount, description, date, categoryId, isCash ->
+                    onNavigateToAddWithPreFill = { amount, description, storeName, storeId, date, categoryId, isCash ->
                         val amountStr = amount.toString()
                         val descStr = Uri.encode(description)
+                        val storeNameStr = Uri.encode(storeName)
+                        val storeIdStr = storeId?.toString() ?: "null"
                         val dateStr = Uri.encode(date ?: "null")
                         val catIdStr = categoryId?.toString() ?: "null"
                         val isCashStr = isCash?.toString() ?: "null"
                         navController.navigate(
-                            "add/expense?amount=$amountStr&description=$descStr&date=$dateStr&categoryId=$catIdStr&isCash=$isCashStr"
+                            "add/expense?amount=$amountStr&description=$descStr&storeName=$storeNameStr&storeId=$storeIdStr&date=$dateStr&categoryId=$catIdStr&isCash=$isCashStr"
                         ) {
                             popUpTo("scanner") { inclusive = true }
                         }

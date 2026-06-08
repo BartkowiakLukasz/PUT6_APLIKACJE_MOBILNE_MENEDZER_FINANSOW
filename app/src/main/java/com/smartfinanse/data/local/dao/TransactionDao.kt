@@ -23,6 +23,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate ORDER BY date DESC")
     fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<TransactionWithDetails>>
 
+    @Query("SELECT MAX(date) FROM transactions WHERE subscriptionId = :subscriptionId")
+    suspend fun getMaxDateForSubscription(subscriptionId: Long): Long?
+
     @Query("""
         SELECT categories.name AS categoryName, categories.iconName AS categoryIcon, SUM(transactions.amount) AS totalAmount 
         FROM transactions 

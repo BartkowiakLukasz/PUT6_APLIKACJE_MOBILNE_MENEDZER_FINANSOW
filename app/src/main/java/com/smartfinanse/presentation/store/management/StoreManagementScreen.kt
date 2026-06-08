@@ -203,8 +203,7 @@ fun StoreManagementScreen(
                     }
                 }
             }
+            }
         }
     }
 }
-}
-

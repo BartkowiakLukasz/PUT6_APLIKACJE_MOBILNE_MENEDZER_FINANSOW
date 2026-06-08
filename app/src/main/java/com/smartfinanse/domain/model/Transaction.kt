@@ -13,5 +13,6 @@ data class Transaction(
     val location: String?,
     val receiptImageUri: String?,
     val storeId: Long? = null,
+    val subscriptionId: Long? = null,
     val recurringInterval: Period = Period.ofMonths(1)
 )

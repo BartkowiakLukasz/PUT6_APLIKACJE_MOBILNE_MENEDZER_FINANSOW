@@ -18,6 +18,14 @@ class TransactionRepositoryImpl @Inject constructor(
             items.map { it.toDomain() }
         }
 
+    override fun getTransactionsBetweenDates(startDate: Long, endDate: Long): Flow<List<com.smartfinanse.domain.model.Transaction>> =
+        transactionDao.getTransactionsBetweenDates(startDate, endDate).map { items ->
+            items.map { it.transaction.toDomain() }
+        }
+
+    override suspend fun getMaxDateForSubscription(subscriptionId: Long): Long? =
+        transactionDao.getMaxDateForSubscription(subscriptionId)
+
     override suspend fun addTransaction(transaction: com.smartfinanse.domain.model.Transaction) {
         transactionDao.insertTransaction(transaction.toEntity())
     }

@@ -8,6 +8,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.smartfinanse.data.local.dao.CategoryDao
 import com.smartfinanse.data.local.dao.StoreDao
 import com.smartfinanse.data.local.dao.TransactionDao
+import com.smartfinanse.data.local.dao.SubscriptionDao
+import com.smartfinanse.data.local.dao.SubscriptionCategoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +43,12 @@ object DatabaseModule {
     @Provides
     fun provideStoreDao(database: SmartFinanseDatabase): StoreDao =
         database.storeDao
+
+    @Provides
+    fun provideSubscriptionDao(database: SmartFinanseDatabase): SubscriptionDao =
+        database.subscriptionDao
+
+    @Provides
+    fun provideSubscriptionCategoryDao(database: SmartFinanseDatabase): SubscriptionCategoryDao =
+        database.subscriptionCategoryDao
 }

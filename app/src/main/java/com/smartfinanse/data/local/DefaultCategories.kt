@@ -1,6 +1,8 @@
 package com.smartfinanse.data.local
 
 import com.smartfinanse.data.local.entity.CategoryEntity
+import com.smartfinanse.data.local.entity.SubscriptionCategoryEntity
+import android.graphics.Color
 
 object DefaultCategories {
 
@@ -21,4 +23,14 @@ object DefaultCategories {
     )
 
     fun all(): List<CategoryEntity> = expenseCategories() + incomeCategories()
+
+    fun subscriptionCategories(): List<SubscriptionCategoryEntity> = listOf(
+        SubscriptionCategoryEntity(name = "VOD i Streaming", iconId = "ic_entertainment", color = Color.parseColor("#E50914").toLong()),
+        SubscriptionCategoryEntity(name = "Muzyka i Podcasty", iconId = "ic_music", color = Color.parseColor("#1DB954").toLong()),
+        SubscriptionCategoryEntity(name = "Oprogramowanie i Chmura", iconId = "ic_work", color = Color.parseColor("#0078D7").toLong()),
+        SubscriptionCategoryEntity(name = "Telekomunikacja", iconId = "ic_phone", color = Color.parseColor("#FF9800").toLong()),
+        SubscriptionCategoryEntity(name = "Zdrowie i Sport", iconId = "ic_health", color = Color.parseColor("#E91E63").toLong()),
+        SubscriptionCategoryEntity(name = "Gry i Rozrywka", iconId = "ic_game", color = Color.parseColor("#9C27B0").toLong()),
+        SubscriptionCategoryEntity(name = "Inne", iconId = "ic_other", color = Color.parseColor("#607D8B").toLong())
+    )
 }

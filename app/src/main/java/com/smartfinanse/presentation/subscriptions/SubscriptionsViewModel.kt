@@ -43,15 +43,9 @@ class SubscriptionsViewModel @Inject constructor(
                 var totalExpenses = 0L
 
                 val uiItems = items.map { item ->
-                    val tx = item.transactionWithCategory.transaction
-                    val cat = item.transactionWithCategory.category
-                    val isExpense = cat?.isExpense ?: true
+                    val sub = item.subscription
                     
-                    if (isExpense) {
-                        totalExpenses += tx.amount
-                    } else {
-                        totalExpenses -= tx.amount // If income, subtract from cost
-                    }
+                    totalExpenses += sub.amount
 
                     val renewalDate = Instant.ofEpochMilli(item.nextRenewalDateMillis).atZone(zoneId).toLocalDate()
                     val daysUntil = ChronoUnit.DAYS.between(today, renewalDate).toInt()
@@ -63,14 +57,14 @@ class SubscriptionsViewModel @Inject constructor(
                     }
 
                     SubscriptionItemUi(
-                        id = tx.id,
-                        title = tx.description.capitalizeFirst(),
-                        categoryName = cat?.name?.capitalizeFirst(),
-                        categoryId = cat?.id,
-                        amountFormatted = MoneyFormatter.format(tx.amount, isExpense),
+                        id = sub.id,
+                        title = sub.serviceName.capitalizeFirst(),
+                        categoryName = sub.categoryName?.capitalizeFirst(),
+                        categoryId = sub.categoryId,
+                        amountFormatted = MoneyFormatter.format(sub.amount, true), // all subscriptions are expenses
                         nextRenewalDateFormatted = dateText,
                         daysUntilRenewal = daysUntil,
-                        isExpense = isExpense
+                        isExpense = true
                     )
                 }
 

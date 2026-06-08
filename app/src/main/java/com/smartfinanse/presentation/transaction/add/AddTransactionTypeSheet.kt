@@ -21,7 +21,8 @@ import com.smartfinanse.R
 fun AddTransactionTypeSheet(
     onDismiss: () -> Unit,
     onAddExpense: () -> Unit,
-    onAddIncome: () -> Unit
+    onAddIncome: () -> Unit,
+    onAddSubscription: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -64,6 +65,20 @@ fun AddTransactionTypeSheet(
                     .fillMaxWidth()
                     .clickable {
                         onAddIncome()
+                        onDismiss()
+                    }
+            )
+            ListItem(
+                headlineContent = {
+                    Text("Dodaj subskrypcję")
+                },
+                supportingContent = {
+                    Text("Cykliczna opłata")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        onAddSubscription()
                         onDismiss()
                     }
             )

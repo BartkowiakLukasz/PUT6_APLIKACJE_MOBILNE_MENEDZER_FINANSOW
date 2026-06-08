@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.DirectionsCar
@@ -56,10 +57,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import com.smartfinanse.presentation.common.SmartFinanseTopAppBar
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.DockedSearchBar
+import androidx.compose.material3.ListItem
+import com.smartfinanse.presentation.common.StoreIconRenderer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.smartfinanse.domain.util.capitalizeFirst
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -88,6 +93,7 @@ fun AddTransactionScreen(
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit,
     onNavigateToCategoryAdd: (Boolean) -> Unit,
+    onNavigateToStoreAdd: () -> Unit,
     viewModel: AddTransactionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -127,9 +133,12 @@ fun AddTransactionScreen(
             onIsRecurringChange = viewModel::onIsRecurringChange,
             onCategorySelected = viewModel::onCategorySelected,
             onCategorySearchQueryChanged = viewModel::onCategorySearchQueryChanged,
+            onStoreSelected = viewModel::onStoreSelected,
+            onStoreSearchQueryChanged = viewModel::onStoreSearchQueryChanged,
             onSaveClick = viewModel::saveTransaction,
             onShowAddCategoryClick = { onNavigateToCategoryAdd(uiState.isExpense) },
             onNavigateToScanner = onNavigateToScanner,
+            onNavigateToStoreAdd = onNavigateToStoreAdd,
             showScanner = uiState.isExpense
         )
     }
@@ -147,12 +156,16 @@ private fun AddTransactionContent(
     onIsRecurringChange: (Boolean) -> Unit,
     onCategorySelected: (Long) -> Unit,
     onCategorySearchQueryChanged: (String) -> Unit,
+    onStoreSelected: (Long?) -> Unit,
+    onStoreSearchQueryChanged: (String) -> Unit,
     onSaveClick: () -> Unit,
     onShowAddCategoryClick: () -> Unit,
     onNavigateToScanner: () -> Unit,
+    onNavigateToStoreAdd: () -> Unit,
     showScanner: Boolean
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    var storeSearchActive by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -195,6 +208,73 @@ private fun AddTransactionContent(
             },
             modifier = Modifier.fillMaxWidth()
         )
+
+        if (uiState.isExpense) {
+            val filteredStores = remember(uiState.recentStores, uiState.storeSearchQuery) {
+                if (uiState.storeSearchQuery.isEmpty()) {
+                    uiState.recentStores.take(4)
+                } else {
+                    uiState.recentStores.filter { 
+                        it.name.contains(uiState.storeSearchQuery, ignoreCase = true) 
+                    }
+                }
+            }
+
+            DockedSearchBar(
+                query = uiState.storeSearchQuery,
+                onQueryChange = onStoreSearchQueryChanged,
+                onSearch = { storeSearchActive = false },
+                active = storeSearchActive,
+                onActiveChange = { storeSearchActive = it },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Sklep (np. Lidl)") },
+                leadingIcon = { Icon(Icons.Default.Store, contentDescription = null) },
+                trailingIcon = {
+                    if (storeSearchActive && uiState.storeSearchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onStoreSearchQueryChanged("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Wyczyść")
+                        }
+                    } else if (uiState.selectedStoreId != null) {
+                        IconButton(onClick = { onStoreSelected(null) }) {
+                            Icon(Icons.Default.Close, contentDescription = "Usuń sklep")
+                        }
+                    }
+                }
+            ) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(1),
+                    modifier = Modifier.height(200.dp)
+                ) {
+                    items(filteredStores, key = { it.id }) { store ->
+                        ListItem(
+                            headlineContent = { Text(store.name.capitalizeFirst()) },
+                            leadingContent = {
+                                StoreIconRenderer(
+                                    iconName = store.iconName,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                onStoreSelected(store.id)
+                                onStoreSearchQueryChanged(store.name.capitalizeFirst())
+                                storeSearchActive = false
+                            }
+                        )
+                    }
+                    item {
+                        ListItem(
+                            headlineContent = { Text("Dodaj nowy sklep", color = MaterialTheme.colorScheme.primary) },
+                            leadingContent = { Icon(Icons.Default.Add, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
+                            modifier = Modifier.clickable {
+                                onNavigateToStoreAdd()
+                                storeSearchActive = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
 
         OutlinedTextField(
             value = uiState.description,

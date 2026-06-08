@@ -6,5 +6,7 @@ import androidx.room.Relation
 data class TransactionWithDetails(
     @Embedded val transaction: TransactionEntity,
     @Relation(parentColumn = "categoryId", entityColumn = "id")
-    val category: CategoryEntity?
+    val category: CategoryEntity?,
+    @Relation(parentColumn = "storeId", entityColumn = "id")
+    val store: StoreEntity?
 )

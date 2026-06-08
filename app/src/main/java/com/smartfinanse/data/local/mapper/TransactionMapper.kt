@@ -4,6 +4,7 @@ import com.smartfinanse.data.local.entity.TransactionEntity
 import com.smartfinanse.data.local.entity.TransactionWithDetails
 import com.smartfinanse.domain.model.Transaction
 import com.smartfinanse.domain.model.TransactionWithCategory
+import com.smartfinanse.domain.model.Store
 
 fun TransactionEntity.toDomain(): Transaction = Transaction(
     id = id,
@@ -15,6 +16,7 @@ fun TransactionEntity.toDomain(): Transaction = Transaction(
     isRecurring = isRecurring,
     location = location,
     receiptImageUri = receiptImageUri,
+    storeId = storeId,
     recurringInterval = recurringInterval
 )
 
@@ -27,10 +29,12 @@ fun Transaction.toEntity(): TransactionEntity = TransactionEntity(
     isCash = isCash,
     isRecurring = isRecurring,
     location = location,
-    receiptImageUri = receiptImageUri
+    receiptImageUri = receiptImageUri,
+    storeId = storeId
 ).apply { this.recurringInterval = this@toEntity.recurringInterval }
 
 fun TransactionWithDetails.toDomain(): TransactionWithCategory = TransactionWithCategory(
     transaction = transaction.toDomain(),
-    category = category?.toDomain()
+    category = category?.toDomain(),
+    store = store?.toDomain()
 )

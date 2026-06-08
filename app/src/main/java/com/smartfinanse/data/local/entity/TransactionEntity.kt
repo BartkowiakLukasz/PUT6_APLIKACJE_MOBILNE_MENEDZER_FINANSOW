@@ -15,9 +15,15 @@ import java.time.Period
             parentColumns = ["id"],
             childColumns = ["categoryId"],
             onDelete = ForeignKey.SET_NULL
+        ),
+        ForeignKey(
+            entity = StoreEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["storeId"],
+            onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index("categoryId"), Index("date")]
+    indices = [Index("categoryId"), Index("date"), Index("storeId")]
 )
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -28,7 +34,8 @@ data class TransactionEntity(
     val isCash: Boolean,
     val isRecurring: Boolean = false,
     val location: String?,
-    val receiptImageUri: String?
+    val receiptImageUri: String?,
+    val storeId: Long? = null
 ) {
     @Ignore
     var recurringInterval: Period = Period.ofMonths(1)

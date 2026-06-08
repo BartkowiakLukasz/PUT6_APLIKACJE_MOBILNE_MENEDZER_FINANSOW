@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.smartfinanse.domain.model.Category
 import com.smartfinanse.domain.model.Transaction
 import com.smartfinanse.domain.repository.CategoryRepository
+import com.smartfinanse.domain.repository.StoreRepository
 import com.smartfinanse.domain.usecase.AddTransactionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ import javax.inject.Inject
 class AddTransactionViewModel @Inject constructor(
     private val addTransactionUseCase: AddTransactionUseCase,
     private val categoryRepository: CategoryRepository,
+    private val storeRepository: StoreRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -74,12 +76,31 @@ class AddTransactionViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
+        savedStateHandle.getStateFlow<Long?>("newStoreId", null)
+            .onEach { newId ->
+                if (newId != null) {
+                    onStoreSelected(newId)
+                    savedStateHandle.remove<Long>("newStoreId")
+                }
+            }
+            .launchIn(viewModelScope)
+            
+        loadRecentStores()
     }
 
     private fun loadCategories() {
         categoryRepository.getCategories(isExpense = _uiState.value.isExpense)
             .onEach { categories ->
                 _uiState.update { it.copy(categories = categories) }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun loadRecentStores() {
+        storeRepository.getRecentStores()
+            .onEach { stores ->
+                _uiState.update { it.copy(recentStores = stores) }
             }
             .launchIn(viewModelScope)
     }
@@ -110,6 +131,14 @@ class AddTransactionViewModel @Inject constructor(
 
     fun onCategorySearchQueryChanged(query: String) {
         _uiState.update { it.copy(categorySearchQuery = query) }
+    }
+
+    fun onStoreSelected(storeId: Long?) {
+        _uiState.update { it.copy(selectedStoreId = storeId) }
+    }
+
+    fun onStoreSearchQueryChanged(query: String) {
+        _uiState.update { it.copy(storeSearchQuery = query) }
     }
 
 
@@ -155,8 +184,9 @@ class AddTransactionViewModel @Inject constructor(
                     date = state.date,
                     isCash = state.isCash,
                     isRecurring = state.isRecurring,
-                    location = null,
-                    receiptImageUri = null
+                    location = null, // Przenieśliśmy na Store
+                    receiptImageUri = null,
+                    storeId = state.selectedStoreId
                 )
 
                 addTransactionUseCase(transaction)

@@ -81,10 +81,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
 import androidx.compose.ui.res.stringResource
 import com.smartfinanse.R
 import com.smartfinanse.domain.model.Category
+import com.smartfinanse.presentation.common.CategoryIconRenderer
+import com.smartfinanse.presentation.common.getMaterialIconByName
+import com.smartfinanse.presentation.common.parseCategoryHexColor
+import com.smartfinanse.domain.util.capitalizeFirst
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -218,7 +221,7 @@ private fun CategoryItemCard(
             )
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = category.name,
+                text = category.name.capitalizeFirst(),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -226,57 +229,7 @@ private fun CategoryItemCard(
     }
 }
 
-@Composable
-fun CategoryIconRenderer(
-    iconName: String,
-    colorHex: String,
-    modifier: Modifier = Modifier
-) {
-    val fallback = MaterialTheme.colorScheme.onSurfaceVariant
-    val color = parseCategoryHexColor(colorHex, fallback)
 
-    Box(
-        modifier = modifier
-            .background(color = color.copy(alpha = 0.2f), shape = CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        if (iconName.startsWith("file://") || iconName.startsWith("content://")) {
-            AsyncImage(
-                model = iconName,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(4.dp)
-                    .clip(CircleShape)
-            )
-        } else {
-            val vector = getMaterialIconByName(iconName)
-            Icon(
-                imageVector = vector,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-    }
-}
-
-fun getMaterialIconByName(name: String): ImageVector {
-    return when (name) {
-        "ic_food" -> Icons.Default.ShoppingCart
-        "ic_transport" -> Icons.Rounded.DirectionsCar
-        "ic_health" -> Icons.Default.Favorite
-        "ic_bills" -> Icons.Rounded.ReceiptLong
-        "ic_entertainment" -> Icons.Rounded.RoundedStar
-        "ic_other" -> Icons.Default.Build
-        "ic_shopping" -> Icons.Default.ShoppingCart
-        "ic_home" -> Icons.Default.Home
-        "ic_work" -> Icons.Default.Work
-        "ic_star" -> Icons.Default.Star
-        else -> Icons.Rounded.RoundedStar
-    }
-}
 
 @Composable
 private fun CategoryFormSheet(
@@ -430,10 +383,4 @@ private fun CategoryFormSheet(
     }
 }
 
-private fun parseCategoryHexColor(hex: String, fallback: Color): Color {
-    return try {
-        Color(android.graphics.Color.parseColor(hex))
-    } catch (e: Exception) {
-        fallback
-    }
-}
+

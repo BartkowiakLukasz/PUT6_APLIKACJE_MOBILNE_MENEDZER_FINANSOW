@@ -145,7 +145,7 @@ class CategoryManagementViewModel @Inject constructor(
 
         val category = Category(
             id = state.editingCategoryId ?: 0L,
-            name = state.nameInput.trim(),
+            name = state.nameInput.trim().lowercase(),
             iconName = state.selectedIconName,
             isExpense = isExpense,
             colorHex = state.selectedColorHex

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -195,16 +196,19 @@ fun DashboardScreen(
                         }
                     }
 
-                    if (
-                        (showExpenses && uiState.expenseBreakdown.isEmpty()) &&
-                        (showIncome && uiState.incomeBreakdown.isEmpty())
-                    ) {
+                    val isExpensesEmptyIfShown = !showExpenses || uiState.expenseBreakdown.isEmpty()
+                    val isIncomeEmptyIfShown = !showIncome || uiState.incomeBreakdown.isEmpty()
+
+                    if (isExpensesEmptyIfShown && isIncomeEmptyIfShown) {
                         item {
                             Text(
                                 text = stringResource(R.string.dashboard_no_transactions_in_period),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 24.dp)
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp)
                             )
                         }
                     }

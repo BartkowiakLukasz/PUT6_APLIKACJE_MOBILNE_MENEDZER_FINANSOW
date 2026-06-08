@@ -31,7 +31,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.dp
 import com.smartfinanse.R
+import com.smartfinanse.domain.util.capitalizeFirst
 
 fun buildCombinedChartItems(
     incomeBreakdown: List<CategoryBreakdownItem>,
@@ -237,7 +239,7 @@ fun CategoryBreakdownRow(item: CategoryBreakdownItem) {
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        text = item.name,
+                        text = item.name.capitalizeFirst(),
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         color = colorScheme.onSurface
@@ -283,7 +285,7 @@ fun IncomeCategoryCard(item: CategoryBreakdownItem) {
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = item.name,
+                    text = item.name.capitalizeFirst(),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium,
                     color = colorScheme.onSurface,

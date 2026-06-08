@@ -65,6 +65,15 @@ class AddTransactionViewModel @Inject constructor(
         }
 
         loadCategories()
+
+        savedStateHandle.getStateFlow<Long?>("newCategoryId", null)
+            .onEach { newId ->
+                if (newId != null) {
+                    onCategorySelected(newId)
+                    savedStateHandle.remove<Long>("newCategoryId")
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun loadCategories() {
@@ -99,35 +108,7 @@ class AddTransactionViewModel @Inject constructor(
         _uiState.update { it.copy(selectedCategoryId = categoryId, categoryError = null) }
     }
 
-    fun showAddCategoryDialog(show: Boolean) {
-        _uiState.update { it.copy(showAddCategoryDialog = show) }
-    }
 
-    fun addNewCategory(name: String) {
-        if (name.isBlank()) return
-        
-        // Wybierzmy jakiś ładny losowy kolor z palety, by wyglądał dobrze na nowej kategorii
-        val availableColors = listOf("#F44336", "#673AB7", "#3F51B5", "#009688", "#795548", "#607D8B", "#FFC107")
-        val randomColor = availableColors.random()
-
-        viewModelScope.launch {
-            val newCategory = Category(
-                id = 0,
-                name = name.trim(),
-                iconName = "ic_category_other",
-                isExpense = _uiState.value.isExpense,
-                colorHex = randomColor
-            )
-            val newId = categoryRepository.addCategory(newCategory)
-            _uiState.update { 
-                it.copy(
-                    selectedCategoryId = newId,
-                    showAddCategoryDialog = false,
-                    categoryError = null
-                ) 
-            }
-        }
-    }
 
     fun clearGlobalError() {
         _uiState.update { it.copy(globalError = null) }
@@ -166,7 +147,7 @@ class AddTransactionViewModel @Inject constructor(
                     id = 0,
                     categoryId = state.selectedCategoryId,
                     amount = amountInGroschen,
-                    description = state.description.ifBlank { if (state.isExpense) "Wydatek" else "Przychód" },
+                    description = state.description.ifBlank { if (state.isExpense) "wydatek" else "przychód" }.lowercase(),
                     date = state.date,
                     isCash = state.isCash,
                     isRecurring = state.isRecurring,

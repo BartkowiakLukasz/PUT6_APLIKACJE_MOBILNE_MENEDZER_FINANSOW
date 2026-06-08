@@ -23,6 +23,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -105,11 +107,21 @@ fun DashboardHeroRevolut(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            var textMultiplier by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(1f) }
             Text(
                 text = formatBalance(netBalance),
-                style = MaterialTheme.typography.displayLarge,
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontSize = MaterialTheme.typography.displayLarge.fontSize * textMultiplier
+                ),
                 color = onHero,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Clip,
+                onTextLayout = { result ->
+                    if (result.hasVisualOverflow) {
+                        textMultiplier *= 0.9f
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(12.dp))

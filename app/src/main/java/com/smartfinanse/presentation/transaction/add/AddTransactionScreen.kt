@@ -23,9 +23,19 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.rounded.DirectionsCar
+import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,7 +44,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -68,12 +78,14 @@ import com.smartfinanse.domain.model.Category
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.smartfinanse.domain.util.capitalizeFirst
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTransactionScreen(
     onNavigateBack: () -> Unit,
     onNavigateToScanner: () -> Unit,
+    onNavigateToCategoryAdd: (Boolean) -> Unit,
     viewModel: AddTransactionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -113,17 +125,10 @@ fun AddTransactionScreen(
             onIsRecurringChange = viewModel::onIsRecurringChange,
             onCategorySelected = viewModel::onCategorySelected,
             onSaveClick = viewModel::saveTransaction,
-            onShowAddCategoryClick = { viewModel.showAddCategoryDialog(true) },
+            onShowAddCategoryClick = { onNavigateToCategoryAdd(uiState.isExpense) },
             onNavigateToScanner = onNavigateToScanner,
             showScanner = uiState.isExpense
         )
-
-        if (uiState.showAddCategoryDialog) {
-            AddCategoryDialog(
-                onDismiss = { viewModel.showAddCategoryDialog(false) },
-                onConfirm = { name -> viewModel.addNewCategory(name) }
-            )
-        }
     }
 }
 
@@ -343,15 +348,18 @@ private fun CategoryItem(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Icon placeholder
-            Text(category.iconName.take(2).uppercase(), style = MaterialTheme.typography.titleMedium, color = contentColor)
+            com.smartfinanse.presentation.common.CategoryIconRenderer(
+                iconName = category.iconName,
+                colorHex = category.colorHex,
+                modifier = Modifier.size(32.dp)
+            )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = category.name,
+                text = category.name.capitalizeFirst(),
                 style = MaterialTheme.typography.bodySmall,
                 color = contentColor,
                 textAlign = TextAlign.Center,
-                maxLines = 1
+                maxLines = 2
             )
         }
     }
@@ -383,44 +391,4 @@ private fun AddCategoryItem(onClick: () -> Unit) {
     }
 }
 
-@Composable
-fun AddCategoryDialog(
-    onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
-) {
-    var categoryName by remember { mutableStateOf("") }
-    val focusManager = LocalFocusManager.current
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Nowa kategoria") },
-        text = {
-            OutlinedTextField(
-                value = categoryName,
-                onValueChange = { categoryName = it },
-                label = { Text("Nazwa kategorii") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onConfirm(categoryName) },
-                enabled = categoryName.isNotBlank()
-            ) {
-                Text("Dodaj")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Anuluj")
-            }
-        }
-    )
-}

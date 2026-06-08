@@ -23,5 +23,6 @@ data class TransactionItemUi(
     val amountFormatted: String,
     val dateFormatted: String,
     val isCash: Boolean,
-    val isExpense: Boolean
+    val isExpense: Boolean,
+    val isRecurring: Boolean
 )

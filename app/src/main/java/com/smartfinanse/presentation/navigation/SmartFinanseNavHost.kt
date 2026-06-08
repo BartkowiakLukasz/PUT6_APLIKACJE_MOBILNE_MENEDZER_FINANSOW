@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.smartfinanse.presentation.category.CategoryManagementScreen
+import com.smartfinanse.presentation.category.add.AddCategoryScreen
 import com.smartfinanse.presentation.dashboard.DashboardChartsScreen
 import com.smartfinanse.presentation.dashboard.DashboardScreen
 import com.smartfinanse.presentation.export.ExportScreen
@@ -81,23 +82,42 @@ fun SmartFinanseNavHost(
             composable("add") {
                 AddTransactionScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToScanner = { navController.navigateSecondary("scanner") }
+                    onNavigateToScanner = { navController.navigateSecondary("scanner") },
+                    onNavigateToCategoryAdd = { isExpense ->
+                        navController.navigateSecondary("addCategory/$isExpense")
+                    }
                 )
             }
             composable(
                 route = "add/{transactionType}?amount={amount}&description={description}&date={date}&categoryId={categoryId}&isCash={isCash}",
                 arguments = listOf(
                     navArgument("transactionType") { type = NavType.StringType },
-                    navArgument("amount") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("description") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("date") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("categoryId") { type = NavType.StringType; defaultValue = "" },
-                    navArgument("isCash") { type = NavType.StringType; defaultValue = "" }
+                    navArgument("amount") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("description") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("date") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("categoryId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("isCash") { type = NavType.StringType; nullable = true; defaultValue = null }
                 )
             ) {
                 AddTransactionScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToScanner = { navController.navigateSecondary("scanner") }
+                    onNavigateToScanner = { navController.navigateSecondary("scanner") },
+                    onNavigateToCategoryAdd = { isExpense ->
+                        navController.navigateSecondary("addCategory/$isExpense")
+                    }
+                )
+            }
+            composable(
+                route = "addCategory/{isExpense}",
+                arguments = listOf(navArgument("isExpense") { type = NavType.BoolType })
+            ) {
+                AddCategoryScreen(
+                    onNavigateBackWithResult = { categoryId ->
+                        if (categoryId != null) {
+                            navController.previousBackStackEntry?.savedStateHandle?.set("newCategoryId", categoryId)
+                        }
+                        navController.popBackStack()
+                    }
                 )
             }
             composable("categories") {

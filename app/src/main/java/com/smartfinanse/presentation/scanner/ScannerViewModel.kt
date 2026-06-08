@@ -6,7 +6,7 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.smartfinanse.data.scanner.AiParsingException
+import com.smartfinanse.data.scanner.ScannerException
 import com.smartfinanse.data.scanner.ParsedReceipt
 import com.smartfinanse.data.scanner.ReceiptParserAi
 import com.smartfinanse.domain.repository.CategoryRepository
@@ -26,7 +26,7 @@ sealed class ScannerUiState {
         val parsedReceipt: ParsedReceipt, 
         val resolvedCategoryId: Long?
     ) : ScannerUiState()
-    data class Error(val message: String) : ScannerUiState()
+    data class Error(val exception: Exception) : ScannerUiState()
 }
 
 @HiltViewModel
@@ -40,10 +40,13 @@ class ScannerViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<ScannerUiState>(ScannerUiState.Idle)
     val uiState: StateFlow<ScannerUiState> = _uiState.asStateFlow()
 
+    private var lastProcessedUri: Uri? = null
+
     fun processReceipt(uri: Uri) {
+        lastProcessedUri = uri
         viewModelScope.launch {
             if (!isInternetAvailable()) {
-                _uiState.value = ScannerUiState.Error("Brak dostępu do internetu. Połączenie z siecią jest wymagane do analizy paragonu przez AI.")
+                _uiState.value = ScannerUiState.Error(com.smartfinanse.data.scanner.ScannerException.NetworkError)
                 return@launch
             }
 
@@ -75,15 +78,19 @@ class ScannerViewModel @Inject constructor(
 
                 _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id)
 
-            } catch (e: AiParsingException) {
-                com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "AiParsingException: ${e.message}", e)
-                _uiState.value = ScannerUiState.Error(e.message ?: "Błąd analizy sztucznej inteligencji")
+            } catch (e: com.smartfinanse.data.scanner.ScannerException) {
+                com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "ScannerException: ${e.javaClass.simpleName}", e)
+                _uiState.value = ScannerUiState.Error(e)
             } catch (e: Exception) {
                 com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "Unexpected exception: ${e.message}", e)
                 e.printStackTrace()
-                _uiState.value = ScannerUiState.Error("Wystąpił nieoczekiwany błąd: ${e.message}")
+                _uiState.value = ScannerUiState.Error(Exception("Wystąpił nieoczekiwany błąd: ${e.message}"))
             }
         }
+    }
+
+    fun retryLastReceipt() {
+        lastProcessedUri?.let { processReceipt(it) }
     }
 
     fun clearState() {

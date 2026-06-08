@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.smartfinanse.BuildConfig
 
 import android.graphics.Bitmap
+import kotlinx.coroutines.delay
 
 data class ParsedReceipt(
     val sklep: String,
@@ -15,6 +16,12 @@ data class ParsedReceipt(
     val kategoria: String,
     val czyGotowka: Boolean?
 )
+
+sealed class ScannerException : Exception() {
+    object ServerBusy : ScannerException()
+    object NetworkError : ScannerException()
+    object InvalidImage : ScannerException()
+}
 
 class ReceiptParserAi {
 
@@ -42,19 +49,39 @@ class ReceiptParserAi {
             systemInstruction = content { text(systemInstruction) }
         )
 
-        return try {
-            val response = model.generateContent(content { image(bitmap) })
-            val jsonText = response.text ?: throw AiParsingException("Pusta odpowiedź od modelu")
-            
-            com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Gemini response JSON: $jsonText")
-            
-            gson.fromJson(jsonText, ParsedReceipt::class.java)
-        } catch (e: Exception) {
-            com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Błąd analizy danych z paragonu", e)
-            e.printStackTrace()
-            throw AiParsingException("Nie udało się przeanalizować danych ze zdjęcia. Upewnij się, że paragon jest wyraźny.", e)
+        var attempt = 0
+        while (true) {
+            try {
+                val response = model.generateContent(content { image(bitmap) })
+                val jsonText = response.text ?: throw ScannerException.InvalidImage
+                
+                com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Gemini response JSON: $jsonText")
+                
+                return gson.fromJson(jsonText, ParsedReceipt::class.java)
+            } catch (e: Exception) {
+                com.smartfinanse.utils.FileLogger.logError("ReceiptParser", "Błąd analizy danych z paragonu", e)
+                e.printStackTrace()
+                
+                val errorMessage = e.message?.lowercase() ?: ""
+                val isNetworkError = e is java.net.UnknownHostException || e is java.net.SocketTimeoutException || errorMessage.contains("network")
+                val isServerError = e.javaClass.simpleName.contains("ServerException") || errorMessage.contains("503") || errorMessage.contains("busy") || errorMessage.contains("unavailable")
+                
+                if (isServerError) {
+                    if (attempt < 1) { // 1 retry
+                        attempt++
+                        delay(1000)
+                        continue
+                    } else {
+                        throw ScannerException.ServerBusy
+                    }
+                }
+                
+                if (isNetworkError) {
+                    throw ScannerException.NetworkError
+                }
+                
+                throw ScannerException.InvalidImage
+            }
         }
     }
 }
-
-class AiParsingException(message: String, cause: Throwable? = null) : Exception(message, cause)

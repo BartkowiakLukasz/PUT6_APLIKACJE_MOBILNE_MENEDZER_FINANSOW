@@ -74,8 +74,31 @@ fun ScannerScreen(
                 viewModel.clearState()
             }
             is ScannerUiState.Error -> {
-                snackbarHostState.showSnackbar(state.message)
-                viewModel.clearState()
+                when (val e = state.exception) {
+                    is com.smartfinanse.data.scanner.ScannerException.ServerBusy -> {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Serwery AI są zajęte. Spróbuj ponownie za chwilę.",
+                            actionLabel = "Ponów"
+                        )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.retryLastReceipt()
+                        } else {
+                            viewModel.clearState()
+                        }
+                    }
+                    is com.smartfinanse.data.scanner.ScannerException.InvalidImage -> {
+                        snackbarHostState.showSnackbar("Nie udało się odczytać danych. Upewnij się, że zdjęcie jest wyraźne.")
+                        viewModel.clearState()
+                    }
+                    is com.smartfinanse.data.scanner.ScannerException.NetworkError -> {
+                        snackbarHostState.showSnackbar("Brak dostępu do internetu. Połączenie z siecią jest wymagane do analizy paragonu przez AI.")
+                        viewModel.clearState()
+                    }
+                    else -> {
+                        snackbarHostState.showSnackbar(e.message ?: "Wystąpił nieoczekiwany błąd.")
+                        viewModel.clearState()
+                    }
+                }
             }
             else -> {}
         }

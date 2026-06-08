@@ -1,32 +1,36 @@
-*.iml
-.gradle
-/local.properties
-.idea
-.DS_Store
-/build
+# --- Lokalna konfiguracja (nigdy nie commitować) ---
+local.properties
+**/local.properties
+key.properties
+secrets.properties
+*.jks
+*.keystore
+
+# --- Android / Gradle ---
+.gradle/
+build/
+**/build/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
-
-# Aplikacja - build
-/app/build/
-architecture.md
-
 *.apk
 *.aab
 *.ap_
 *.dex
+*.hprof
 
+# --- Kotlin ---
 .kotlin/
-.kotlin_module/
-.kotlin_module_cache/
-.kotlin_module_cache_2/
-.kotlin_module_cache_3/
-.kotlin_module_cache_4/
-.kotlin_module_cache_5/
-.kotlin_module_cache_6/
-.kotlin_module_cache_7/
-.kotlin_module_cache_8/
-.kotlin_module_cache_9/
-.kotlin_module_cache_10/
+*.kotlin_module
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+
+# --- System ---
+.DS_Store
+Thumbs.db
+
+# --- Notatki lokalne (kontekst projektu jest w .antigravity/context/) ---
+architecture.md

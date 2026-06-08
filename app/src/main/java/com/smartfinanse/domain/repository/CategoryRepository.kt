@@ -9,4 +9,5 @@ interface CategoryRepository {
     suspend fun seedIncomeCategoriesIfMissing()
     suspend fun addCategory(category: Category): Long
     suspend fun updateCategory(category: Category)
+    suspend fun deleteCategory(categoryId: Long)
 }

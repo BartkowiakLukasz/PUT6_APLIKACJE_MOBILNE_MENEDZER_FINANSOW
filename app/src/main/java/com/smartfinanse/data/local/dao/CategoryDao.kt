@@ -28,6 +28,9 @@ interface CategoryDao {
     @androidx.room.Update
     suspend fun updateCategory(category: CategoryEntity)
 
+    @Query("DELETE FROM categories WHERE id = :categoryId")
+    suspend fun deleteCategory(categoryId: Long)
+
     @Query("SELECT * FROM categories")
     suspend fun getAllCategoriesRaw(): List<CategoryEntity>
 

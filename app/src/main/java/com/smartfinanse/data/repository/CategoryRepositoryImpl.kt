@@ -38,4 +38,8 @@ class CategoryRepositoryImpl @Inject constructor(
     override suspend fun updateCategory(category: Category) {
         categoryDao.updateCategory(category.toEntity())
     }
+
+    override suspend fun deleteCategory(categoryId: Long) {
+        categoryDao.deleteCategory(categoryId)
+    }
 }

@@ -45,16 +45,25 @@ class CategoryManagementViewModel @Inject constructor(
         observeCategories()
     }
 
+    fun onSearchQueryChanged(query: String) {
+        _uiState.update { state ->
+            val filtered = if (query.isBlank()) state.categories else state.categories.filter { it.name.contains(query, ignoreCase = true) }
+            state.copy(searchQuery = query, filteredCategories = filtered)
+        }
+    }
+
     private fun observeCategories() {
         categoriesJob?.cancel()
         categoriesJob = viewModelScope.launch {
             categoryRepository.getCategories(_uiState.value.managingExpenses)
                 .catch { /* Handle error */ }
                 .collect { categories ->
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { state ->
+                        val filtered = if (state.searchQuery.isBlank()) categories else categories.filter { it.name.contains(state.searchQuery, ignoreCase = true) }
+                        state.copy(
                             isLoading = false,
-                            categories = categories
+                            categories = categories,
+                            filteredCategories = filtered
                         )
                     }
                 }
@@ -158,6 +167,22 @@ class CategoryManagementViewModel @Inject constructor(
                 categoryRepository.addCategory(category)
             }
             closeSheet()
+        }
+    }
+
+    fun showDeleteConfirmation(category: Category) {
+        _uiState.update { it.copy(showDeleteConfirmationFor = category) }
+    }
+
+    fun hideDeleteConfirmation() {
+        _uiState.update { it.copy(showDeleteConfirmationFor = null) }
+    }
+
+    fun deleteCategory() {
+        val category = _uiState.value.showDeleteConfirmationFor ?: return
+        viewModelScope.launch {
+            categoryRepository.deleteCategory(category.id)
+            hideDeleteConfirmation()
         }
     }
 }

@@ -31,6 +31,8 @@ import com.smartfinanse.presentation.more.MoreScreen
 import com.smartfinanse.presentation.scanner.ScannerScreen
 import com.smartfinanse.presentation.settings.SettingsScreen
 import com.smartfinanse.presentation.subscriptions.SubscriptionsScreen
+import com.smartfinanse.presentation.store.add.AddStoreScreen
+import com.smartfinanse.presentation.store.management.StoreManagementScreen
 import com.smartfinanse.presentation.transaction.add.AddTransactionScreen
 import com.smartfinanse.presentation.transaction.list.TransactionListScreen
 
@@ -89,6 +91,9 @@ fun SmartFinanseNavHost(
                     onNavigateToScanner = { navController.navigateSecondary("scanner") },
                     onNavigateToCategoryAdd = { isExpense ->
                         navController.navigateSecondary("addCategory/$isExpense")
+                    },
+                    onNavigateToStoreAdd = {
+                        navController.navigateSecondary("addStore")
                     }
                 )
             }
@@ -108,6 +113,9 @@ fun SmartFinanseNavHost(
                     onNavigateToScanner = { navController.navigateSecondary("scanner") },
                     onNavigateToCategoryAdd = { isExpense ->
                         navController.navigateSecondary("addCategory/$isExpense")
+                    },
+                    onNavigateToStoreAdd = {
+                        navController.navigateSecondary("addStore")
                     }
                 )
             }
@@ -124,9 +132,25 @@ fun SmartFinanseNavHost(
                     }
                 )
             }
+            composable("addStore") {
+                AddStoreScreen(
+                    onNavigateBackWithResult = { storeId ->
+                        if (storeId != null) {
+                            navController.previousBackStackEntry?.savedStateHandle?.set("newStoreId", storeId)
+                        }
+                        navController.popBackStack()
+                    }
+                )
+            }
             composable("categories") {
                 CategoryManagementScreen(
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable("stores") {
+                StoreManagementScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAddStore = { navController.navigateSecondary("addStore") }
                 )
             }
             composable("scanner") {

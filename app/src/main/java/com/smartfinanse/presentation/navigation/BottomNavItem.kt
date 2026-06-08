@@ -32,6 +32,7 @@ enum class BottomNavItem(
 
         private val secondaryMoreRoutes = setOf(
             "categories",
+            "stores",
             "scanner",
             "export",
             "settings"

@@ -11,6 +11,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +44,12 @@ fun MoreScreen(
             subtitle = "Kolory, ikony i nazwy",
             icon = Icons.Default.Build,
             route = "categories"
+        ),
+        MoreMenuItem(
+            title = "Zarządzanie sklepami",
+            subtitle = "Logo i nazwy sklepów",
+            icon = Icons.Default.Store,
+            route = "stores"
         ),
         MoreMenuItem(
             title = "Skaner paragonów",

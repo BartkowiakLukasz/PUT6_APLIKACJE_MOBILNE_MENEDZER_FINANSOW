@@ -34,6 +34,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.DirectionsCar
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.AlertDialog
@@ -124,6 +126,7 @@ fun AddTransactionScreen(
             onIsCashChange = viewModel::onIsCashChange,
             onIsRecurringChange = viewModel::onIsRecurringChange,
             onCategorySelected = viewModel::onCategorySelected,
+            onCategorySearchQueryChanged = viewModel::onCategorySearchQueryChanged,
             onSaveClick = viewModel::saveTransaction,
             onShowAddCategoryClick = { onNavigateToCategoryAdd(uiState.isExpense) },
             onNavigateToScanner = onNavigateToScanner,
@@ -143,6 +146,7 @@ private fun AddTransactionContent(
     onIsCashChange: (Boolean) -> Unit,
     onIsRecurringChange: (Boolean) -> Unit,
     onCategorySelected: (Long) -> Unit,
+    onCategorySearchQueryChanged: (String) -> Unit,
     onSaveClick: () -> Unit,
     onShowAddCategoryClick: () -> Unit,
     onNavigateToScanner: () -> Unit,
@@ -241,41 +245,75 @@ private fun AddTransactionContent(
         }
 
         // Toggles
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Płatność gotówką", style = MaterialTheme.typography.bodyLarge)
-            Switch(
-                checked = uiState.isCash,
-                onCheckedChange = onIsCashChange
-            )
-        }
+        if (uiState.isExpense) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Płatność gotówką", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = uiState.isCash,
+                    onCheckedChange = onIsCashChange
+                )
+            }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Opłata cykliczna (np. subskrypcja)", style = MaterialTheme.typography.bodyLarge)
-            Switch(
-                checked = uiState.isRecurring,
-                onCheckedChange = onIsRecurringChange
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Opłata cykliczna (np. subskrypcja)", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = uiState.isRecurring,
+                    onCheckedChange = onIsRecurringChange
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Kategoria", style = MaterialTheme.typography.titleMedium)
-            if (uiState.categoryError != null) {
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = uiState.categoryError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Kategoria", style = MaterialTheme.typography.titleMedium)
+                if (uiState.categoryError != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = uiState.categoryError,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
+        }
+
+        if (uiState.categories.size > 6) {
+            OutlinedTextField(
+                value = uiState.categorySearchQuery,
+                onValueChange = onCategorySearchQueryChanged,
+                placeholder = { Text("Wyszukaj kategorię...") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                leadingIcon = {
+                    Icon(Icons.Default.Search, contentDescription = "Szukaj")
+                },
+                trailingIcon = {
+                    if (uiState.categorySearchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onCategorySearchQueryChanged("") }) {
+                            Icon(Icons.Default.Close, contentDescription = "Wyczyść")
+                        }
+                    }
+                }
+            )
+        }
+
+        val filteredCategories = remember(uiState.categories, uiState.categorySearchQuery) {
+            uiState.categories
+                .filter { it.name.contains(uiState.categorySearchQuery, ignoreCase = true) }
+                .sortedBy { it.name.lowercase() }
         }
 
         // Categories Grid
@@ -286,7 +324,7 @@ private fun AddTransactionContent(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(uiState.categories, key = { it.id }) { category ->
+            items(filteredCategories, key = { it.id }) { category ->
                 CategoryItem(
                     category = category,
                     isSelected = category.id == uiState.selectedCategoryId,

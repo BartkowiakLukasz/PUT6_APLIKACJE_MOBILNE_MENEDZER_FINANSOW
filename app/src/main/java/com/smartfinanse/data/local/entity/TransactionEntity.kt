@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.Ignore
+import java.time.Period
 
 @Entity(
     tableName = "transactions",
@@ -27,4 +29,7 @@ data class TransactionEntity(
     val isRecurring: Boolean = false,
     val location: String?,
     val receiptImageUri: String?
-)
+) {
+    @Ignore
+    var recurringInterval: Period = Period.ofMonths(1)
+}

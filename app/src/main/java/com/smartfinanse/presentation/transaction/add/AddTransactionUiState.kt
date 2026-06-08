@@ -10,6 +10,7 @@ data class AddTransactionUiState(
     val isRecurring: Boolean = false,
     val isExpense: Boolean = true,
     val selectedCategoryId: Long? = null,
+    val categorySearchQuery: String = "",
     val categories: List<Category> = emptyList(),
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,

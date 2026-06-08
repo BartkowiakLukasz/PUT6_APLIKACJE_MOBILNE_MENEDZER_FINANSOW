@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class BottomNavItem(
@@ -13,15 +14,17 @@ enum class BottomNavItem(
 ) {
     DASHBOARD("dashboard", "Pulpit", Icons.Default.Home),
     HISTORY("history", "Historia", Icons.Default.List),
+    SUBSCRIPTIONS("subscriptions", "Subskrypcje", Icons.Default.Autorenew),
     MORE("more", "Więcej", Icons.Default.MoreHoriz);
 
     companion object {
-        val all = listOf(DASHBOARD, HISTORY, MORE)
+        val all = listOf(DASHBOARD, HISTORY, SUBSCRIPTIONS, MORE)
 
         fun fromRoute(route: String?): BottomNavItem? = when {
             route == null -> null
             route == DASHBOARD.route -> DASHBOARD
             route == HISTORY.route -> HISTORY
+            route == SUBSCRIPTIONS.route -> SUBSCRIPTIONS
             route == MORE.route -> MORE
             route in secondaryMoreRoutes -> MORE
             else -> null

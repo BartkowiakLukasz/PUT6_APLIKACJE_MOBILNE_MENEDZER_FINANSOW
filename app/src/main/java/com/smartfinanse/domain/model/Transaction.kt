@@ -1,5 +1,7 @@
 package com.smartfinanse.domain.model
 
+import java.time.Period
+
 data class Transaction(
     val id: Long,
     val categoryId: Long?,
@@ -9,5 +11,6 @@ data class Transaction(
     val isCash: Boolean,
     val isRecurring: Boolean,
     val location: String?,
-    val receiptImageUri: String?
+    val receiptImageUri: String?,
+    val recurringInterval: Period = Period.ofMonths(1)
 )

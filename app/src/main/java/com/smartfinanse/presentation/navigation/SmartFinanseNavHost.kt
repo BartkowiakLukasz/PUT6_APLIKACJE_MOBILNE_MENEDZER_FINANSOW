@@ -30,6 +30,7 @@ import com.smartfinanse.presentation.export.ExportScreen
 import com.smartfinanse.presentation.more.MoreScreen
 import com.smartfinanse.presentation.scanner.ScannerScreen
 import com.smartfinanse.presentation.settings.SettingsScreen
+import com.smartfinanse.presentation.subscriptions.SubscriptionsScreen
 import com.smartfinanse.presentation.transaction.add.AddTransactionScreen
 import com.smartfinanse.presentation.transaction.list.TransactionListScreen
 
@@ -67,6 +68,9 @@ fun SmartFinanseNavHost(
                     onNavigateBack = { navController.popBackStack() },
                     viewModel = hiltViewModel(parentEntry)
                 )
+            }
+            composable("subscriptions") {
+                SubscriptionsScreen()
             }
             composable(BottomNavItem.HISTORY.route) {
                 TransactionListScreen(

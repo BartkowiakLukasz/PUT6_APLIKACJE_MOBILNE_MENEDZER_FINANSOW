@@ -108,6 +108,10 @@ class AddTransactionViewModel @Inject constructor(
         _uiState.update { it.copy(selectedCategoryId = categoryId, categoryError = null) }
     }
 
+    fun onCategorySearchQueryChanged(query: String) {
+        _uiState.update { it.copy(categorySearchQuery = query) }
+    }
+
 
 
     fun clearGlobalError() {

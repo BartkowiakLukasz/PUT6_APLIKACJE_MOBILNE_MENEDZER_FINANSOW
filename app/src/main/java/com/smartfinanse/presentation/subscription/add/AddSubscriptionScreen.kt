@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -25,7 +26,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +81,11 @@ fun AddSubscriptionScreen(
                 value = uiState.serviceName,
                 onValueChange = viewModel::onServiceNameChange,
                 label = { Text("Nazwa usługi") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                ),
+                singleLine = true,
                 isError = uiState.nameError != null,
                 supportingText = { uiState.nameError?.let { Text(it) } },
                 modifier = Modifier.fillMaxWidth()
@@ -89,7 +97,14 @@ fun AddSubscriptionScreen(
                 value = uiState.amount,
                 onValueChange = viewModel::onAmountChange,
                 label = { Text("Kwota (PLN)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                ),
+                singleLine = true,
                 isError = uiState.amountError != null,
                 supportingText = { uiState.amountError?.let { Text(it) } },
                 modifier = Modifier.fillMaxWidth()

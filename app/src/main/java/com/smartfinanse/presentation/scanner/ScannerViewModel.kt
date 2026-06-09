@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.smartfinanse.data.scanner.ScannerException
 import com.smartfinanse.data.scanner.ParsedReceipt
 import com.smartfinanse.data.scanner.ReceiptParserAi
+import com.smartfinanse.domain.model.Store
 import com.smartfinanse.domain.repository.CategoryRepository
 import com.smartfinanse.domain.repository.StoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -80,9 +81,16 @@ class ScannerViewModel @Inject constructor(
                 val resolvedCategory = categories.find { it.name.equals(parsedReceipt.kategoria, ignoreCase = true) }
                 
                 val stores = storeRepository.getAllStores().first()
-                val resolvedStore = stores.find { it.name.equals(parsedReceipt.sklep, ignoreCase = true) }
+                val sklepFromApi = parsedReceipt.sklep.trim().lowercase()
+                var resolvedStoreId = stores.find { it.name == sklepFromApi }?.id
 
-                _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id, resolvedStore?.id)
+                if (resolvedStoreId == null && sklepFromApi.isNotEmpty()) {
+                    resolvedStoreId = storeRepository.insertStore(
+                        Store(id = 0, name = sklepFromApi, iconName = "store")
+                    )
+                }
+
+                _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id, resolvedStoreId)
 
             } catch (e: com.smartfinanse.data.scanner.ScannerException) {
                 com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "ScannerException: ${e.javaClass.simpleName}", e)

@@ -5,6 +5,8 @@ key.properties
 secrets.properties
 *.jks
 *.keystore
+run_gradlew.bat
+.antigravity/context/local_conventions.md
 
 # --- Android / Gradle ---
 .gradle/

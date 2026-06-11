@@ -490,7 +490,7 @@ private fun AddCategoryItem(onClick: () -> Unit) {
             Icon(Icons.Default.Add, contentDescription = "Dodaj", tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Inne / Dodaj",
+                text = "Dodaj",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

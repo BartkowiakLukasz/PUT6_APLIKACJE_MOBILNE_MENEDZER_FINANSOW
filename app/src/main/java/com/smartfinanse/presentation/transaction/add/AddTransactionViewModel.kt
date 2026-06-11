@@ -60,6 +60,10 @@ class AddTransactionViewModel @Inject constructor(
         val storeIdStr = savedStateHandle.get<String>("storeId")
         val storeId = if (storeIdStr != "null") storeIdStr?.toLongOrNull() else null
 
+        val isFallbackCategoryStr = savedStateHandle.get<String>("isFallbackCategory")
+        val isFallbackCategory = isFallbackCategoryStr == "true"
+        val categoryErrorMsg = if (isFallbackCategory) "Nie udało się sklasyfikować kategorii, wybrano 'Inne'." else null
+
         _uiState.update {
             it.copy(
                 isExpense = isExpense,
@@ -71,7 +75,8 @@ class AddTransactionViewModel @Inject constructor(
                 selectedStoreId = storeId,
                 date = dateMillis,
                 selectedCategoryId = categoryId,
-                isCash = isCashParam ?: it.isCash
+                isCash = isCashParam ?: it.isCash,
+                categoryError = categoryErrorMsg
             )
         }
 

@@ -27,7 +27,8 @@ sealed class ScannerUiState {
     data class Success(
         val parsedReceipt: ParsedReceipt, 
         val resolvedCategoryId: Long?,
-        val resolvedStoreId: Long?
+        val resolvedStoreId: Long?,
+        val isFallbackCategory: Boolean = false
     ) : ScannerUiState()
     data class Error(val exception: Exception) : ScannerUiState()
 }
@@ -78,7 +79,19 @@ class ScannerViewModel @Inject constructor(
                 val parsedReceipt = receiptParserAi.parseReceiptImage(bitmap, categoryNames)
 
                 // Krok 4: Dopasowanie kategorii i sklepu do ID
-                val resolvedCategory = categories.find { it.name.equals(parsedReceipt.kategoria, ignoreCase = true) }
+                val kategoriaFromApi = parsedReceipt.kategoria.trim()
+                var resolvedCategory = categories.find { it.name.trim().equals(kategoriaFromApi, ignoreCase = true) }
+                if (resolvedCategory == null) {
+                    resolvedCategory = categories.find { 
+                        it.name.contains(kategoriaFromApi, ignoreCase = true) || kategoriaFromApi.contains(it.name, ignoreCase = true)
+                    }
+                }
+                var isFallbackCategory = false
+                if (resolvedCategory == null || resolvedCategory.name.equals("Inne", ignoreCase = true)) {
+                    resolvedCategory = categories.find { it.name.equals("Inne", ignoreCase = true) }
+                    isFallbackCategory = true
+                }
+                
                 
                 val stores = storeRepository.getAllStores().first()
                 val sklepFromApi = parsedReceipt.sklep.trim().lowercase()
@@ -90,7 +103,7 @@ class ScannerViewModel @Inject constructor(
                     )
                 }
 
-                _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id, resolvedStoreId)
+                _uiState.value = ScannerUiState.Success(parsedReceipt, resolvedCategory?.id, resolvedStoreId, isFallbackCategory)
 
             } catch (e: com.smartfinanse.data.scanner.ScannerException) {
                 com.smartfinanse.utils.FileLogger.logError("ScannerViewModel", "ScannerException: ${e.javaClass.simpleName}", e)

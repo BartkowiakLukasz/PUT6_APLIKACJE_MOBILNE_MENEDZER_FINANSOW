@@ -40,7 +40,7 @@ fun Context.findActivity(): Activity? = when (this) {
 @Composable
 fun ScannerScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToAddWithPreFill: (amount: Double, description: String, storeName: String, storeId: Long?, date: String?, categoryId: Long?, isCash: Boolean?) -> Unit,
+    onNavigateToAddWithPreFill: (amount: Double, description: String, storeName: String, storeId: Long?, date: String?, categoryId: Long?, isCash: Boolean?, isFallbackCategory: Boolean) -> Unit,
     viewModel: ScannerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -96,7 +96,8 @@ fun ScannerScreen(
                     state.resolvedStoreId,
                     state.parsedReceipt.data,
                     state.resolvedCategoryId,
-                    state.parsedReceipt.czyGotowka
+                    state.parsedReceipt.czyGotowka,
+                    state.isFallbackCategory
                 )
                 viewModel.clearState()
             }

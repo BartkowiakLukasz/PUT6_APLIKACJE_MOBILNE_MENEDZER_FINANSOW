@@ -64,8 +64,8 @@ fun SmartFinanseNavHost(
                     onNavigateToCharts = { navController.navigateSecondary("dashboard/charts") }
                 )
             }
-            composable("dashboard/charts") {
-                val parentEntry = remember {
+            composable("dashboard/charts") { backStackEntry ->
+                val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(BottomNavItem.DASHBOARD.route)
                 }
                 DashboardChartsScreen(
@@ -108,7 +108,7 @@ fun SmartFinanseNavHost(
                 )
             }
             composable(
-                route = "add/{transactionType}?amount={amount}&description={description}&storeName={storeName}&storeId={storeId}&date={date}&categoryId={categoryId}&isCash={isCash}",
+                route = "add/{transactionType}?amount={amount}&description={description}&storeName={storeName}&storeId={storeId}&date={date}&categoryId={categoryId}&isCash={isCash}&isFallbackCategory={isFallbackCategory}",
                 arguments = listOf(
                     navArgument("transactionType") { type = NavType.StringType },
                     navArgument("amount") { type = NavType.StringType; nullable = true; defaultValue = null },
@@ -117,7 +117,8 @@ fun SmartFinanseNavHost(
                     navArgument("storeId") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("date") { type = NavType.StringType; nullable = true; defaultValue = null },
                     navArgument("categoryId") { type = NavType.StringType; nullable = true; defaultValue = null },
-                    navArgument("isCash") { type = NavType.StringType; nullable = true; defaultValue = null }
+                    navArgument("isCash") { type = NavType.StringType; nullable = true; defaultValue = null },
+                    navArgument("isFallbackCategory") { type = NavType.StringType; nullable = true; defaultValue = null }
                 )
             ) {
                 AddTransactionScreen(
@@ -168,7 +169,7 @@ fun SmartFinanseNavHost(
             composable("scanner") {
                 ScannerScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToAddWithPreFill = { amount, description, storeName, storeId, date, categoryId, isCash ->
+                    onNavigateToAddWithPreFill = { amount, description, storeName, storeId, date, categoryId, isCash, isFallbackCategory ->
                         val amountStr = amount.toString()
                         val descStr = Uri.encode(description)
                         val storeNameStr = Uri.encode(storeName)
@@ -176,8 +177,9 @@ fun SmartFinanseNavHost(
                         val dateStr = Uri.encode(date ?: "null")
                         val catIdStr = categoryId?.toString() ?: "null"
                         val isCashStr = isCash?.toString() ?: "null"
+                        val isFallbackStr = isFallbackCategory.toString()
                         navController.navigate(
-                            "add/expense?amount=$amountStr&description=$descStr&storeName=$storeNameStr&storeId=$storeIdStr&date=$dateStr&categoryId=$catIdStr&isCash=$isCashStr"
+                            "add/expense?amount=$amountStr&description=$descStr&storeName=$storeNameStr&storeId=$storeIdStr&date=$dateStr&categoryId=$catIdStr&isCash=$isCashStr&isFallbackCategory=$isFallbackStr"
                         ) {
                             popUpTo("scanner") { inclusive = true }
                         }

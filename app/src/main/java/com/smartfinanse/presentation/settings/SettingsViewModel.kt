@@ -19,11 +19,14 @@ import javax.inject.Inject
 
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
-import com.smartfinanse.data.local.dao.CategoryDao
+import com.smartfinanse.data.local.dao.SubscriptionCategoryDao
+import com.smartfinanse.data.local.dao.SubscriptionDao
 import com.smartfinanse.data.local.dao.StoreDao
 import com.smartfinanse.data.local.dao.TransactionDao
+import com.smartfinanse.data.local.dao.CategoryDao
 import com.smartfinanse.domain.usecase.SeedCategoriesUseCase
 import com.smartfinanse.domain.usecase.SeedStoresUseCase
+import com.smartfinanse.domain.usecase.SeedSubscriptionCategoriesUseCase
 
 data class SettingsUiState(
     val selectedTheme: AppTheme = AppTheme.SYSTEM,
@@ -39,8 +42,11 @@ class SettingsViewModel @Inject constructor(
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao,
     private val storeDao: StoreDao,
+    private val subscriptionDao: SubscriptionDao,
+    private val subscriptionCategoryDao: SubscriptionCategoryDao,
     private val seedCategoriesUseCase: SeedCategoriesUseCase,
-    private val seedStoresUseCase: SeedStoresUseCase
+    private val seedStoresUseCase: SeedStoresUseCase,
+    private val seedSubscriptionCategoriesUseCase: SeedSubscriptionCategoriesUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -83,9 +89,12 @@ class SettingsViewModel @Inject constructor(
                 transactionDao.deleteAll()
                 categoryDao.deleteAll()
                 storeDao.deleteAll()
+                subscriptionDao.deleteAll()
+                subscriptionCategoryDao.deleteAll()
                 
                 seedCategoriesUseCase()
                 seedStoresUseCase()
+                seedSubscriptionCategoriesUseCase()
             } finally {
                 _uiState.update { it.copy(isWipingData = false, showDangerZoneDialog = false) }
             }

@@ -27,6 +27,7 @@ class MainActivity : ComponentActivity() {
         applyLaunchSplashTheme()
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        
         enableEdgeToEdge()
         setContent {
             val theme by preferencesRepository.theme.collectAsStateWithLifecycle()

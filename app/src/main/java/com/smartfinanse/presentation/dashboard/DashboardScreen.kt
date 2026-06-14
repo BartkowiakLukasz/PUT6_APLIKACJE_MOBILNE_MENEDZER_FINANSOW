@@ -43,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.smartfinanse.R
 import com.smartfinanse.presentation.transaction.add.AddTransactionTypeSheet
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, com.google.accompanist.permissions.ExperimentalPermissionsApi::class)
 @Composable
 fun DashboardScreen(
     onNavigateToAddExpense: () -> Unit,
@@ -57,6 +57,20 @@ fun DashboardScreen(
     var showPeriodSheet by remember { mutableStateOf(false) }
     var showDateRangePicker by remember { mutableStateOf(false) }
     var showAddTypeSheet by remember { mutableStateOf(false) }
+
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val permissionState = com.google.accompanist.permissions.rememberPermissionState(
+            permission = android.Manifest.permission.POST_NOTIFICATIONS
+        )
+        androidx.compose.runtime.LaunchedEffect(Unit) {
+            val isGranted = permissionState.status.let {
+                if (it is com.google.accompanist.permissions.PermissionStatus.Granted) true else false
+            }
+            if (!isGranted) {
+                permissionState.launchPermissionRequest()
+            }
+        }
+    }
 
     val showExpenses = uiState.contentFilter != DashboardContentFilter.INCOME_ONLY
     val showIncome = uiState.contentFilter != DashboardContentFilter.EXPENSES_ONLY

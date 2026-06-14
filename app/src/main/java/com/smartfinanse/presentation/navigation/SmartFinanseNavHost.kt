@@ -104,7 +104,8 @@ fun SmartFinanseNavHost(
             }
             composable("add/subscription") {
                 AddSubscriptionScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToCategoryAdd = { navController.navigateSecondary("subscription_categories") }
                 )
             }
             composable(
@@ -205,6 +206,11 @@ fun SmartFinanseNavHost(
                         authViewModel.setupPin(pin)
                         navController.popBackStack()
                     }
+                )
+            }
+            composable("subscription_categories") {
+                com.smartfinanse.presentation.subscription.category.SubscriptionCategoryManagementScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }

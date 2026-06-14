@@ -26,6 +26,9 @@ interface SubscriptionCategoryDao {
     @Delete
     suspend fun deleteCategory(category: SubscriptionCategoryEntity)
 
+    @Query("DELETE FROM subscription_categories")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM subscription_categories WHERE id = :id LIMIT 1")
     suspend fun getCategoryById(id: Long): SubscriptionCategoryEntity?
 }

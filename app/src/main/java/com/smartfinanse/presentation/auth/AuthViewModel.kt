@@ -7,6 +7,7 @@ import com.smartfinanse.util.SecurityUtils
 import com.smartfinanse.util.SessionTimeoutManager
 import com.smartfinanse.domain.usecase.SeedCategoriesUseCase
 import com.smartfinanse.domain.usecase.SeedStoresUseCase
+import com.smartfinanse.domain.usecase.SeedSubscriptionCategoriesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +30,7 @@ class AuthViewModel @Inject constructor(
     private val securityRepository: SecurityPreferencesRepository,
     private val seedCategoriesUseCase: SeedCategoriesUseCase,
     private val seedStoresUseCase: SeedStoresUseCase,
+    private val seedSubscriptionCategoriesUseCase: SeedSubscriptionCategoriesUseCase,
     sessionTimeoutManager: SessionTimeoutManager
 ) : ViewModel() {
 
@@ -98,6 +100,7 @@ class AuthViewModel @Inject constructor(
             // Re-initialize default categories and stores after a hard reset
             seedCategoriesUseCase()
             seedStoresUseCase()
+            seedSubscriptionCategoriesUseCase()
             
             _isUserAuthenticated.value = false
             onComplete()

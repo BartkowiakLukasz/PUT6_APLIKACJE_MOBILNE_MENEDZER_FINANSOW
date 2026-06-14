@@ -13,11 +13,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +46,7 @@ import java.util.*
 @Composable
 fun AddSubscriptionScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToCategoryAdd: () -> Unit,
     viewModel: AddSubscriptionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -175,44 +181,49 @@ fun AddSubscriptionScreen(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.categories) { category ->
-                    val isSelected = uiState.selectedCategoryId == category.id
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .clickable { viewModel.onCategorySelected(category.id) }
-                            .padding(4.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .clip(CircleShape)
-                                .background(if (isSelected) Color(category.color) else Color.LightGray),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            val context = LocalContext.current
-                            val resourceId = context.resources.getIdentifier(
-                                category.iconId, "drawable", context.packageName
-                            )
-                            if (resourceId != 0) {
-                                Icon(
-                                    painter = painterResource(id = resourceId),
-                                    contentDescription = null,
-                                    tint = if (isSelected) Color.White else Color.DarkGray,
-                                    modifier = Modifier.size(24.dp)
-                                )
+            if (uiState.categories.size > 6) {
+                OutlinedTextField(
+                    value = uiState.categorySearchQuery,
+                    onValueChange = viewModel::onCategorySearchQueryChanged,
+                    placeholder = { Text("Wyszukaj kategorię...") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Szukaj")
+                    },
+                    trailingIcon = {
+                        if (uiState.categorySearchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.onCategorySearchQueryChanged("") }) {
+                                Icon(Icons.Default.Close, contentDescription = "Wyczyść")
                             }
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = category.name,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                        )
                     }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            val filteredCategories = remember(uiState.categories, uiState.categorySearchQuery) {
+                uiState.categories
+                    .filter { it.name.contains(uiState.categorySearchQuery, ignoreCase = true) }
+                    .sortedBy { it.name.lowercase() }
+            }
+
+            androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(3),
+                modifier = Modifier.height(200.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(filteredCategories, key = { it.id }) { category ->
+                    SubscriptionCategoryItem(
+                        category = category,
+                        isSelected = category.id == uiState.selectedCategoryId,
+                        onClick = { viewModel.onCategorySelected(category.id) }
+                    )
+                }
+                item {
+                    AddCategoryItem(onClick = onNavigateToCategoryAdd)
                 }
             }
 
@@ -243,6 +254,71 @@ fun AddSubscriptionScreen(
                     Text("Zapisz subskrypcję", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SubscriptionCategoryItem(
+    category: com.smartfinanse.domain.model.SubscriptionCategory,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            val colorHex = String.format("#%06X", (0xFFFFFF and category.color.toInt()))
+            com.smartfinanse.presentation.common.CategoryIconRenderer(
+                iconName = category.iconId ?: "ic_other",
+                colorHex = colorHex,
+                modifier = Modifier.size(32.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = category.name,
+                style = MaterialTheme.typography.bodySmall,
+                color = contentColor,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 2
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddCategoryItem(onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Dodaj", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Dodaj",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
         }
     }
 }

@@ -9,6 +9,7 @@ data class AddSubscriptionUiState(
     val isMonthly: Boolean = true,
     val selectedCategoryId: Long? = null,
     val categories: List<SubscriptionCategory> = emptyList(),
+    val categorySearchQuery: String = "",
     val isSaving: Boolean = false,
     val saveSuccess: Boolean = false,
     val nameError: String? = null,

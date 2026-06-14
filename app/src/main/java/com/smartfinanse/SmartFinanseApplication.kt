@@ -26,6 +26,9 @@ class SmartFinanseApplication : Application() {
     @Inject
     lateinit var seedStoresUseCase: SeedStoresUseCase
 
+    @Inject
+    lateinit var seedSubscriptionCategoriesUseCase: com.smartfinanse.domain.usecase.SeedSubscriptionCategoriesUseCase
+
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun attachBaseContext(base: Context) {
@@ -35,11 +38,17 @@ class SmartFinanseApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        
         ProcessLifecycleOwner.get().lifecycle.addObserver(sessionTimeoutManager)
         com.smartfinanse.utils.FileLogger.init(this)
+        
+        com.smartfinanse.domain.manager.SubscriptionNotificationManager.createNotificationChannel(this)
+        com.smartfinanse.domain.worker.WorkerScheduler.scheduleSubscriptionReminders(this)
+
         applicationScope.launch {
             seedCategoriesUseCase()
             seedStoresUseCase()
+            seedSubscriptionCategoriesUseCase()
         }
     }
 }

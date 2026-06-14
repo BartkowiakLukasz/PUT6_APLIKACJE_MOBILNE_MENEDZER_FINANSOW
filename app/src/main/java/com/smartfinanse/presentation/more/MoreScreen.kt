@@ -52,6 +52,12 @@ fun MoreScreen(
             route = "stores"
         ),
         MoreMenuItem(
+            title = "Kategorie subskrypcji",
+            subtitle = "Kolory, ikony i nazwy",
+            icon = Icons.Default.Build,
+            route = "subscription_categories"
+        ),
+        MoreMenuItem(
             title = "Skaner paragonów",
             subtitle = "Zdjęcie i analiza AI",
             icon = Icons.Default.Search,

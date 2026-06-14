@@ -13,6 +13,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Work
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.rounded.DirectionsCar
 import androidx.compose.material.icons.rounded.ReceiptLong
 import androidx.compose.material.icons.rounded.Star as RoundedStar
@@ -84,6 +87,9 @@ fun getMaterialIconByName(name: String): ImageVector {
         "ic_home" -> Icons.Default.Home
         "ic_work" -> Icons.Default.Work
         "ic_star" -> Icons.Default.Star
+        "ic_music" -> Icons.Default.MusicNote
+        "ic_phone" -> Icons.Default.Phone
+        "ic_game" -> Icons.Default.SportsEsports
         else -> Icons.Rounded.RoundedStar
     }
 }

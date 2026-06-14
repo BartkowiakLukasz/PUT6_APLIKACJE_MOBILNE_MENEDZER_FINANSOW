@@ -193,7 +193,18 @@ fun SmartFinanseNavHost(
             }
             composable("settings") {
                 SettingsScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToChangePin = { navController.navigateSecondary("changePin") }
+                )
+            }
+            composable("changePin") {
+                val authViewModel: com.smartfinanse.presentation.auth.AuthViewModel = hiltViewModel()
+                com.smartfinanse.presentation.auth.ChangePinScreen(
+                    onVerifyOldPin = { pin, onResult -> authViewModel.verifyPin(pin, onResult) },
+                    onPinSetup = { pin -> 
+                        authViewModel.setupPin(pin)
+                        navController.popBackStack()
+                    }
                 )
             }
         }

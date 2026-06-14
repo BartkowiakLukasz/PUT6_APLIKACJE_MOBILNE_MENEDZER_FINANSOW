@@ -11,9 +11,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.smartfinanse.util.SessionTimeoutManager
 
 @HiltAndroidApp
 class SmartFinanseApplication : Application() {
+
+    @Inject
+    lateinit var sessionTimeoutManager: SessionTimeoutManager
 
     @Inject
     lateinit var seedCategoriesUseCase: SeedCategoriesUseCase
@@ -30,6 +35,7 @@ class SmartFinanseApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        ProcessLifecycleOwner.get().lifecycle.addObserver(sessionTimeoutManager)
         com.smartfinanse.utils.FileLogger.init(this)
         applicationScope.launch {
             seedCategoriesUseCase()

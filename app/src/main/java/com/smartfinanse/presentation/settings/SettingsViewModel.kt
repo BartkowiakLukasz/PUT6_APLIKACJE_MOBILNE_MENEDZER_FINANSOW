@@ -19,8 +19,11 @@ import javax.inject.Inject
 
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
-import com.smartfinanse.data.local.dao.TransactionDao
 import com.smartfinanse.data.local.dao.CategoryDao
+import com.smartfinanse.data.local.dao.StoreDao
+import com.smartfinanse.data.local.dao.TransactionDao
+import com.smartfinanse.domain.usecase.SeedCategoriesUseCase
+import com.smartfinanse.domain.usecase.SeedStoresUseCase
 
 data class SettingsUiState(
     val selectedTheme: AppTheme = AppTheme.SYSTEM,
@@ -34,7 +37,10 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val preferencesRepository: UserPreferencesRepository,
     private val transactionDao: TransactionDao,
-    private val categoryDao: CategoryDao
+    private val categoryDao: CategoryDao,
+    private val storeDao: StoreDao,
+    private val seedCategoriesUseCase: SeedCategoriesUseCase,
+    private val seedStoresUseCase: SeedStoresUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -76,6 +82,10 @@ class SettingsViewModel @Inject constructor(
             try {
                 transactionDao.deleteAll()
                 categoryDao.deleteAll()
+                storeDao.deleteAll()
+                
+                seedCategoriesUseCase()
+                seedStoresUseCase()
             } finally {
                 _uiState.update { it.copy(isWipingData = false, showDangerZoneDialog = false) }
             }

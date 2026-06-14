@@ -21,6 +21,9 @@ interface StoreDao {
     @Query("DELETE FROM stores WHERE id = :storeId")
     suspend fun deleteStore(storeId: Long)
 
+    @Query("DELETE FROM stores")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM stores ORDER BY name ASC")
     fun getAllStores(): Flow<List<StoreEntity>>
 

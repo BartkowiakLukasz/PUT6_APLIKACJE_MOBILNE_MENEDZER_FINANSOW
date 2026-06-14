@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
             }
 
             SmartFinanseTheme(darkTheme = isDarkTheme) {
-                SmartFinanseNavHost()
+                com.smartfinanse.presentation.navigation.SmartFinanseRoot()
             }
         }
     }

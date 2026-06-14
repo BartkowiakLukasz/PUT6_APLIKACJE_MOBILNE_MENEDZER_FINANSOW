@@ -25,6 +25,7 @@ import com.smartfinanse.domain.repository.Currency
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToChangePin: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -130,6 +131,20 @@ fun SettingsScreen(
                             }
                         }
                     }
+                }
+            }
+
+            item {
+                Divider()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Bezpieczeństwo", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedButton(
+                    onClick = onNavigateToChangePin,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Zmień kod PIN")
                 }
             }
 

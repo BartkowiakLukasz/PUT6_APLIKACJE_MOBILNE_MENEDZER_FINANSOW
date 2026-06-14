@@ -114,4 +114,7 @@ dependencies {
 
     // WorkManager
     implementation(libs.androidx.work.runtime.ktx)
+
+    // Google Mobile Ads
+    implementation(libs.play.services.ads)
 }

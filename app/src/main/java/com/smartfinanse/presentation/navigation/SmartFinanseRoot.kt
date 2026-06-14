@@ -50,7 +50,11 @@ fun SmartFinanseRoot(
             )
         }
         is AuthState.Authenticated -> {
-            SmartFinanseNavHost()
+            com.smartfinanse.presentation.ads.AdGatekeeperScreen(
+                onNavigateToDashboard = {
+                    SmartFinanseNavHost()
+                }
+            )
         }
     }
 }

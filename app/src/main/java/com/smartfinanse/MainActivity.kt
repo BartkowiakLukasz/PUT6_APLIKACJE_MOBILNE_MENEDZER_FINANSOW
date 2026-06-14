@@ -23,10 +23,16 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var preferencesRepository: UserPreferencesRepository
 
+    @Inject
+    lateinit var adManager: com.smartfinanse.domain.manager.AdManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         applyLaunchSplashTheme()
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        
+        // Asynchroniczne ładowanie reklamy w tle
+        adManager.loadInterstitialAd(this)
         
         enableEdgeToEdge()
         setContent {

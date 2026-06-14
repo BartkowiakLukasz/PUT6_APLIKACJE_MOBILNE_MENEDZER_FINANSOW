@@ -39,6 +39,8 @@ class SmartFinanseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
+        com.google.android.gms.ads.MobileAds.initialize(this) {}
+        
         ProcessLifecycleOwner.get().lifecycle.addObserver(sessionTimeoutManager)
         com.smartfinanse.utils.FileLogger.init(this)
         

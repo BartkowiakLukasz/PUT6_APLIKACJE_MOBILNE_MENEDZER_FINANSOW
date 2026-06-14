@@ -16,6 +16,9 @@ import com.smartfinanse.presentation.theme.SmartFinanseTheme
 import com.smartfinanse.presentation.theme.applyLaunchSplashTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -31,8 +34,11 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         
-        // Asynchroniczne ładowanie reklamy w tle
-        adManager.loadInterstitialAd(this)
+        // Asynchroniczne ładowanie reklamy w tle z opóźnieniem, by nie blokować UI
+        lifecycleScope.launch {
+            delay(500)
+            adManager.loadInterstitialAd(this@MainActivity)
+        }
         
         enableEdgeToEdge()
         setContent {

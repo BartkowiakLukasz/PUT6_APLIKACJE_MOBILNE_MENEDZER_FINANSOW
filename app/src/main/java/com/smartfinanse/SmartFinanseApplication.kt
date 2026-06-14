@@ -39,8 +39,6 @@ class SmartFinanseApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
-        com.google.android.gms.ads.MobileAds.initialize(this) {}
-        
         ProcessLifecycleOwner.get().lifecycle.addObserver(sessionTimeoutManager)
         com.smartfinanse.utils.FileLogger.init(this)
         
@@ -48,6 +46,7 @@ class SmartFinanseApplication : Application() {
         com.smartfinanse.domain.worker.WorkerScheduler.scheduleSubscriptionReminders(this)
 
         applicationScope.launch {
+            com.google.android.gms.ads.MobileAds.initialize(this@SmartFinanseApplication) {}
             seedCategoriesUseCase()
             seedStoresUseCase()
             seedSubscriptionCategoriesUseCase()
